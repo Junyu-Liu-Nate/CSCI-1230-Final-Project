@@ -74,15 +74,19 @@ void Realtime::initializeGL() {
 
     // Load the main(default) shader
     m_shader = ShaderLoader::createShaderProgram("resources/shaders/default.vert", "resources/shaders/default.frag");
-
     // Generate VBO
     glGenBuffers(1, &m_vbo);
-
     // Generate VAO
     glGenVertexArrays(1, &m_vao);
-
     // Generate texture image
     glGenTextures(1, &m_texture);
+
+    // Generate Terrain-related stuff
+    m_terrain_shader = ShaderLoader::createShaderProgram("resources/shaders/terrain.vert", "resources/shaders/terrain.frag");
+    // Generate terrain VBO
+    glGenBuffers(1, &m_terrain_vbo);
+    // Generate terrain VAO
+    glGenVertexArrays(1, &m_terrain_vao);
 
     // Texture shader - operates on FBO
     m_frame_shader = ShaderLoader::createShaderProgram("resources/shaders/frame.vert", "resources/shaders/frame.frag");
@@ -166,20 +170,21 @@ void Realtime::paintGL() {
 
     // Call glViewport
     glViewport(0, 0, m_screen_width, m_screen_height);
-
     // Clear screen color and depth before painting
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // ====== Draw with default shader
     paintGeometry();
 
+    // ====== Draw with terrain shader
+    paintTerrain();
+
+    // ====== Draw with frame shader
     // Bind the default framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, m_defaultFBO);
-
     glViewport(0, 0, m_screen_width, m_screen_height);
-
     // Clear the color and depth buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     // Call paintFrame to draw our FBO color attachment texture
     paintFrame(m_fbo_texture);
 }
@@ -212,9 +217,6 @@ void Realtime::paintFrame(GLuint texture) {
 }
 
 void Realtime::paintGeometry() {
-    // Clear screen color and depth before painting
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     // Bind Vertex Data
     glBindVertexArray(m_vao);
 
@@ -373,6 +375,170 @@ void Realtime::paintGeometry() {
     glUseProgram(0);
 }
 
+void Realtime::paintTerrain() {
+    // Bind Vertex Data
+    glBindVertexArray(m_terrain_vao);
+
+    // Activate the shader program by calling glUseProgram with `m_shader`
+    glUseProgram(m_terrain_shader);
+
+    glUniform1i(glGetUniformLocation(m_terrain_shader, "snowTimer"), snowTimer);
+    glUniform1i(glGetUniformLocation(m_terrain_shader, "rainTimer"), rainTimer);
+    glUniform1i(glGetUniformLocation(m_terrain_shader, "sunTimer"), sunTimer);
+
+    // Pass m_ka, m_kd, m_ks into the fragment shader as a uniform
+    glUniform1f(glGetUniformLocation(m_terrain_shader, "ka"), renderScene.getGlobalData().ka);
+    glUniform1f(glGetUniformLocation(m_terrain_shader, "kd"), renderScene.getGlobalData().kd);
+    glUniform1f(glGetUniformLocation(m_terrain_shader, "ks"), renderScene.getGlobalData().ks);
+
+    // Pass light info
+    int lightCounter = 0;
+    for (SceneLightData &light : renderScene.sceneMetaData.lights) {
+        if (light.type == LightType::LIGHT_DIRECTIONAL) {
+            GLint loc1 = glGetUniformLocation(m_terrain_shader, ("lightTypes[" + std::to_string(lightCounter) + "]").c_str());
+            glUniform1f(loc1, 0);
+
+            GLint loc2 = glGetUniformLocation(m_terrain_shader, ("lightColors[" + std::to_string(lightCounter) + "]").c_str());
+            glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
+
+            GLint loc3 = glGetUniformLocation(m_terrain_shader, ("lightDirections[" + std::to_string(lightCounter) + "]").c_str());
+            float angleRadians = glm::radians(static_cast<float>(timeTracker));
+            glm::vec3 rotatedLightDirection = glm::rotate(angleRadians, glm::vec3(0.0f, 0.0f, 1.0f)) * light.dir;
+            glUniform3f(loc3, rotatedLightDirection.x, rotatedLightDirection.y, rotatedLightDirection.z); // rotate the sun light
+            //                glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
+        }
+        if (light.type == LightType::LIGHT_POINT) {
+            GLint loc1 = glGetUniformLocation(m_terrain_shader, ("lightTypes[" + std::to_string(lightCounter) + "]").c_str());
+            glUniform1f(loc1, 1);
+
+            GLint loc2 = glGetUniformLocation(m_terrain_shader, ("lightColors[" + std::to_string(lightCounter) + "]").c_str());
+            glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
+
+            GLint loc4 = glGetUniformLocation(m_terrain_shader, ("lightPositions[" + std::to_string(lightCounter) + "]").c_str());
+            glUniform3f(loc4, light.pos.x, light.pos.y, light.pos.z);
+
+            GLint loc7 = glGetUniformLocation(m_terrain_shader, ("lightFunctions[" + std::to_string(lightCounter) + "]").c_str());
+            glUniform3f(loc7, light.function.x, light.function.y, light.function.z);
+        }
+        if (light.type == LightType::LIGHT_SPOT) {
+            GLint loc1 = glGetUniformLocation(m_terrain_shader, ("lightTypes[" + std::to_string(lightCounter) + "]").c_str());
+            glUniform1f(loc1, 2);
+
+            GLint loc2 = glGetUniformLocation(m_terrain_shader, ("lightColors[" + std::to_string(lightCounter) + "]").c_str());
+            glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
+
+            GLint loc3 = glGetUniformLocation(m_terrain_shader, ("lightDirections[" + std::to_string(lightCounter) + "]").c_str());
+            glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
+
+            GLint loc4 = glGetUniformLocation(m_terrain_shader, ("lightPositions[" + std::to_string(lightCounter) + "]").c_str());
+            glUniform3f(loc4, light.pos.x, light.pos.y, light.pos.z);
+
+            GLint loc5 = glGetUniformLocation(m_terrain_shader, ("lightAngles[" + std::to_string(lightCounter) + "]").c_str());
+            glUniform1f(loc5, light.angle);
+
+            GLint loc6 = glGetUniformLocation(m_terrain_shader, ("lightPenumbras[" + std::to_string(lightCounter) + "]").c_str());
+            glUniform1f(loc6, light.penumbra);
+
+            GLint loc7 = glGetUniformLocation(m_terrain_shader, ("lightFunctions[" + std::to_string(lightCounter) + "]").c_str());
+            glUniform3f(loc7, light.function.x, light.function.y, light.function.z);
+        }
+
+        lightCounter ++;
+        if (lightCounter >= 8) {
+            break;
+        }
+    }
+
+    // Reset remaining lights if the current scene has fewer than 8 lights
+    for (int i = lightCounter; i < 8; i++) {
+        glUniform1f(glGetUniformLocation(m_terrain_shader, ("lightTypes[" + std::to_string(i) + "]").c_str()), -1); // Set to an invalid type
+        glUniform3f(glGetUniformLocation(m_terrain_shader, ("lightColors[" + std::to_string(i) + "]").c_str()), 0.0f, 0.0f, 0.0f);
+        glUniform3f(glGetUniformLocation(m_terrain_shader, ("lightDirections[" + std::to_string(i) + "]").c_str()), 0.0f, 0.0f, 0.0f);
+        glUniform3f(glGetUniformLocation(m_terrain_shader, ("lightPositions[" + std::to_string(i) + "]").c_str()), 0.0f, 0.0f, 0.0f);
+    }
+
+    // Pass shape info and draw shape
+    // Pass in model matrix for shape i as a uniform into the shader program
+    glUniformMatrix4fv(glGetUniformLocation(m_terrain_shader, "modelMatrix"), 1, GL_FALSE, &terrainModelMatrix[0][0]);
+    glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(terrainModelMatrix)));
+    glUniformMatrix3fv(glGetUniformLocation(m_terrain_shader, "normalMatrix"), 1, GL_FALSE, &normalMatrix[0][0]);
+
+    // Pass in m_view and m_proj
+    glUniformMatrix4fv(glGetUniformLocation(m_terrain_shader, "viewMatrix"), 1, GL_FALSE, &m_view[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(m_terrain_shader, "projectMatrix"), 1, GL_FALSE, &m_proj[0][0]);
+
+    glm::vec4 terrainCAmbient = glm::vec4(0.2, 0.2, 0.2, 1);
+    glm::vec4 terrainCDiffuse = glm::vec4(0.5, 0.5, 0.5, 1);
+    glm::vec4 terrainCSpecular = glm::vec4(0.5, 0.5, 0.5, 1);
+    glUniform4fv(glGetUniformLocation(m_terrain_shader, "cAmbient"), 1, &terrainCAmbient[0]);
+    glUniform4fv(glGetUniformLocation(m_terrain_shader, "cDiffuse"), 1, &terrainCDiffuse[0]);
+    glUniform4fv(glGetUniformLocation(m_terrain_shader, "cSpecular"), 1, &terrainCSpecular[0]);
+
+    bool isTerrainTexture = false; // Currently hardcoded it to be false
+    if (isTerrainTexture) {
+        glUniform1f(glGetUniformLocation(m_shader, "isTexture"), 1.0);
+
+        // Prepare texture image filepath
+//        QString texture_filepath = QString::fromStdString(renderScene.sceneMetaData.shapes.at(i).primitive.material.textureMap.filename);
+        QString texture_filepath = QString::fromStdString("");
+        // Only load texture image when texture image is changed
+        if (!(texture_filepath == texture_filepath_saved)) {
+            // Obtain image from filepath
+            m_image = QImage(texture_filepath);
+            if (m_image.isNull()) {
+                // Handle error: Image didn't load
+                std::cerr << "Failed to load texture image: " << texture_filepath.toStdString() << std::endl;
+                std::cerr << "Continue with no texture image." << std::endl;
+                glUniform1f(glGetUniformLocation(m_shader, "isTexture"), -1.0);
+            }
+            // Format image to fit OpenGL
+            m_image = m_image.convertToFormat(QImage::Format_RGBA8888).mirrored();
+            texture_filepath_saved = texture_filepath;
+        }
+        if (m_image.isNull()) {
+            // Handle error: Image didn't load
+            glUniform1f(glGetUniformLocation(m_terrain_shader, "isTexture"), -1.0);
+        }
+        glGenTextures(1, &m_texture);
+        // Set the active texture slot to texture slot 1
+        glActiveTexture(GL_TEXTURE1);
+        // Bind texture
+        glBindTexture(GL_TEXTURE_2D, m_texture);
+        // Load image into texture
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_image.width(), m_image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, m_image.bits());
+        // Set min and mag filters' interpolation mode to linear
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        // Set the texture.frag uniform for our texture
+        GLint textureUniform = glGetUniformLocation(m_terrain_shader, "textureImgMapping");
+        glUniform1i(textureUniform, 1);  // Set the sampler uniform to use texture unit 1
+    }
+    else {
+        glUniform1f(glGetUniformLocation(m_terrain_shader, "isTexture"), -1.0);
+    }
+    float terrainMaterialBlend = 0.5;
+    glUniform1f(glGetUniformLocation(m_terrain_shader, "materialBlend"), terrainMaterialBlend);
+
+    // Pass shininess and world-space camera position
+    float terrainShininess = 10;
+    glUniform1f(glGetUniformLocation(m_terrain_shader, "shininess"), terrainShininess);
+    glm::vec4 cameraWorldSpacePos = renderScene.sceneCamera.cameraPos;
+    glUniform4fv(glGetUniformLocation(m_terrain_shader, "cameraWorldSpacePos"), 1, &cameraWorldSpacePos[0]);
+
+    // Draw Command
+    glDrawArrays(GL_TRIANGLES, terrainStartIndex, terrainSize);
+
+    // Unbind Vertex Array
+    glBindVertexArray(0);
+
+    // Unbind texture
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Deactivate the shader program by passing 0 into glUseProgram
+    glUseProgram(0);
+}
+
 void Realtime::resizeGL(int w, int h) {
     // Tells OpenGL how big the screen is
     glViewport(0, 0, size().width() * m_devicePixelRatio, size().height() * m_devicePixelRatio);
@@ -404,25 +570,8 @@ void Realtime::resizeGL(int w, int h) {
                                   settings.nearPlane,
                                   settings.farPlane,
                                   metaData);
-
-        setupShapeData();
-
-        // Bind VBO
-        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-        // Send data to VBO
-        glBufferData(GL_ARRAY_BUFFER, vboData.size() * sizeof(GLfloat), vboData.data(), GL_STATIC_DRAW);
-        // Bind VAO
-        glBindVertexArray(m_vao);
-        // Enable and define attribute 0 to store vertex positions and attribute 1 to store vertex normals
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const void*)(0));
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const void*)(3 * sizeof(GLfloat)));
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const void*)(6 * sizeof(GLfloat)));
-        // Clean-up bindings
-        glBindVertexArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER,0);
+        setupShapesGL();
+        setupTerrainGL();
 
         // Setup camera data from the scene
         m_view = renderScene.sceneCamera.getViewMatrix();
@@ -448,24 +597,8 @@ void Realtime::sceneChanged() {
                               settings.farPlane,
                               metaData);
 
-    setupShapeData();
-
-    // Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    // Send data to VBO
-    glBufferData(GL_ARRAY_BUFFER, vboData.size() * sizeof(GLfloat), vboData.data(), GL_STATIC_DRAW);
-    // Bind VAO
-    glBindVertexArray(m_vao);
-    // Enable and define attribute 0 to store vertex positions, attribute 1 to store vertex normals,  attribute 2 to store uv coordinates for textures
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const void*)(0));
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const void*)(3 * sizeof(GLfloat)));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const void*)(6 * sizeof(GLfloat)));
-    // Clean-up bindings
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER,0);
+    setupShapesGL();
+    setupTerrainGL();
 
     // Setup camera data from the scene
     m_view = renderScene.sceneCamera.getViewMatrix();
@@ -491,24 +624,8 @@ void Realtime::settingsChanged() {
                                       settings.farPlane,
                                       metaData);
 
-            setupShapeData();
-
-            // Bind VBO
-            glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-            // Send data to VBO
-            glBufferData(GL_ARRAY_BUFFER, vboData.size() * sizeof(GLfloat), vboData.data(), GL_STATIC_DRAW);
-            // Bind VAO
-            glBindVertexArray(m_vao);
-            // Enable and define attribute 0 to store vertex positions and attribute 1 to store vertex normals
-            glEnableVertexAttribArray(0);
-            glEnableVertexAttribArray(1);
-            glEnableVertexAttribArray(2);
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const void*)(0));
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const void*)(3 * sizeof(GLfloat)));
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const void*)(6 * sizeof(GLfloat)));
-            // Clean-up bindings
-            glBindVertexArray(0);
-            glBindBuffer(GL_ARRAY_BUFFER,0);
+            setupShapesGL();
+            setupTerrainGL();
 
             // Setup camera data from the scene
             m_view = renderScene.sceneCamera.getViewMatrix();
@@ -520,6 +637,48 @@ void Realtime::settingsChanged() {
     }
 
     update(); // asks for a PaintGL() call to occur
+}
+
+void Realtime::setupShapesGL() {
+    setupShapeData();
+
+    // Bind VBO
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    // Send data to VBO
+    glBufferData(GL_ARRAY_BUFFER, vboData.size() * sizeof(GLfloat), vboData.data(), GL_STATIC_DRAW);
+    // Bind VAO
+    glBindVertexArray(m_vao);
+    // Enable and define attribute 0 to store vertex positions and attribute 1 to store vertex normals
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const void*)(0));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const void*)(3 * sizeof(GLfloat)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const void*)(6 * sizeof(GLfloat)));
+    // Clean-up bindings
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER,0);
+}
+
+void Realtime::setupTerrainGL() {
+    setupTerrainData();
+
+    // Bind VBO
+    glBindBuffer(GL_ARRAY_BUFFER, m_terrain_vbo);
+    // Send data to VBO
+    glBufferData(GL_ARRAY_BUFFER, terrainVboData.size() * sizeof(GLfloat), terrainVboData.data(), GL_STATIC_DRAW);
+    // Bind VAO
+    glBindVertexArray(m_terrain_vao);
+    // Enable and define attribute 0 to store vertex positions, attribute 1 to store vertex normals,  attribute 2 to store uv coordinates for textures
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const void*)(0));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const void*)(3 * sizeof(GLfloat)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const void*)(6 * sizeof(GLfloat)));
+    // Clean-up bindings
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER,0);
 }
 
 void Realtime::setupShapeData() {
@@ -557,34 +716,31 @@ void Realtime::setupShapeData() {
             finalShapeParameter2 = int(std::max(3.0f, shapeParameter2 * distanceFactors[shapeIdx]));
         }
 
-//        if (shape.primitive.type == PrimitiveType::PRIMITIVE_CUBE) {
-//            Cube cubeShape;
-//            cubeShape.updateParams(finalShapeParameter1, shape.primitive.material.textureMap.isUsed, shape.primitive.material.textureMap.repeatU, shape.primitive.material.textureMap.repeatV, QString::fromStdString(shape.primitive.material.textureMap.filename));
-//            shapeDataList.push_back(cubeShape.generateShape());
-//        }
-//        if (shape.primitive.type == PrimitiveType::PRIMITIVE_CONE) {
-//            Cone coneShape;
-//            coneShape.updateParams(finalShapeParameter1, finalShapeParameter2, shape.primitive.material.textureMap.isUsed, shape.primitive.material.textureMap.repeatU, shape.primitive.material.textureMap.repeatV, QString::fromStdString(shape.primitive.material.textureMap.filename));
-//            shapeDataList.push_back(coneShape.generateShape());
-//        }
-//        if (shape.primitive.type == PrimitiveType::PRIMITIVE_CYLINDER) {
-//            Cylinder cylinderShape;
-//            cylinderShape.updateParams(finalShapeParameter1, finalShapeParameter2, shape.primitive.material.textureMap.isUsed, shape.primitive.material.textureMap.repeatU, shape.primitive.material.textureMap.repeatV, QString::fromStdString(shape.primitive.material.textureMap.filename));
-//            shapeDataList.push_back(cylinderShape.generateShape());
-//        }
-//        if (shape.primitive.type == PrimitiveType::PRIMITIVE_SPHERE) {
-//            finalShapeParameter1 = int(std::max(2, finalShapeParameter1));
-//            Sphere sphereShape;
-//            sphereShape.updateParams(finalShapeParameter1, finalShapeParameter2, shape.primitive.material.textureMap.isUsed, shape.primitive.material.textureMap.repeatU, shape.primitive.material.textureMap.repeatV, QString::fromStdString(shape.primitive.material.textureMap.filename));
-//            shapeDataList.push_back(sphereShape.generateShape());
-//        }
-//        if (shape.primitive.type == PrimitiveType::PRIMITIVE_MESH) {
-//            Mesh mesh = loadMesh(shape.primitive.meshfile);
-//            shapeDataList.push_back(mesh.generateVertexData());
-//        }
-
-        TerrainGenerator testTerrain;
-        shapeDataList.push_back(testTerrain.generateTerrain());
+        if (shape.primitive.type == PrimitiveType::PRIMITIVE_CUBE) {
+            Cube cubeShape;
+            cubeShape.updateParams(finalShapeParameter1, shape.primitive.material.textureMap.isUsed, shape.primitive.material.textureMap.repeatU, shape.primitive.material.textureMap.repeatV, QString::fromStdString(shape.primitive.material.textureMap.filename));
+            shapeDataList.push_back(cubeShape.generateShape());
+        }
+        if (shape.primitive.type == PrimitiveType::PRIMITIVE_CONE) {
+            Cone coneShape;
+            coneShape.updateParams(finalShapeParameter1, finalShapeParameter2, shape.primitive.material.textureMap.isUsed, shape.primitive.material.textureMap.repeatU, shape.primitive.material.textureMap.repeatV, QString::fromStdString(shape.primitive.material.textureMap.filename));
+            shapeDataList.push_back(coneShape.generateShape());
+        }
+        if (shape.primitive.type == PrimitiveType::PRIMITIVE_CYLINDER) {
+            Cylinder cylinderShape;
+            cylinderShape.updateParams(finalShapeParameter1, finalShapeParameter2, shape.primitive.material.textureMap.isUsed, shape.primitive.material.textureMap.repeatU, shape.primitive.material.textureMap.repeatV, QString::fromStdString(shape.primitive.material.textureMap.filename));
+            shapeDataList.push_back(cylinderShape.generateShape());
+        }
+        if (shape.primitive.type == PrimitiveType::PRIMITIVE_SPHERE) {
+            finalShapeParameter1 = int(std::max(2, finalShapeParameter1));
+            Sphere sphereShape;
+            sphereShape.updateParams(finalShapeParameter1, finalShapeParameter2, shape.primitive.material.textureMap.isUsed, shape.primitive.material.textureMap.repeatU, shape.primitive.material.textureMap.repeatV, QString::fromStdString(shape.primitive.material.textureMap.filename));
+            shapeDataList.push_back(sphereShape.generateShape());
+        }
+        if (shape.primitive.type == PrimitiveType::PRIMITIVE_MESH) {
+            Mesh mesh = loadMesh(shape.primitive.meshfile);
+            shapeDataList.push_back(mesh.generateVertexData());
+        }
 
         modelMatrixList.push_back(shape.ctm);
         shapeIdx++;
@@ -604,6 +760,23 @@ void Realtime::setupShapeData() {
         // Update the current index for the next shape.
         currentIndex += shapeData.size();
     }
+}
+
+void Realtime::setupTerrainData() {
+    int shapeParameter1 = settings.shapeParameter1;
+    int shapeParameter2 = settings.shapeParameter2;
+
+    // Set the lower bound of shape parameters
+    shapeParameter1 = int(std::max(1, shapeParameter1));
+    shapeParameter2 = int(std::max(3, shapeParameter2));
+
+    TerrainGenerator testTerrain;
+    terrainData = testTerrain.generateTerrain();
+    terrainModelMatrix = glm::mat4(1);
+
+    terrainVboData = terrainData;
+    terrainStartIndex = 0;
+    terrainSize = terrainData.size() / 8;
 }
 
 std::vector<float> Realtime::calculateDistanceFactors() {

@@ -87,6 +87,8 @@ target_sources(final_project_other_files
   PRIVATE
   resources/shaders/frame.frag
   resources/shaders/frame.vert
+  resources/shaders/terrain.vert
+  resources/shaders/terrain.frag
 
 
 

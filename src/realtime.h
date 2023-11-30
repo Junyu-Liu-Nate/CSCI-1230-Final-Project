@@ -40,6 +40,10 @@ protected:
     void resizeGL(int width, int height) override;      // Called when window size changes
 
 private:
+    // ======= GL-related
+    void setupShapesGL();
+    void setupTerrainGL();
+
     // ======= Shapes-related
     GLuint m_shader; // Stores id of main shader program - default.vert/.frag
     GLuint m_vbo; // Stores id of vbo
@@ -70,6 +74,22 @@ private:
     int shapeParameter1Saved = settings.shapeParameter1;
     int shapeParameter2Saved = settings.shapeParameter2;
     QString texture_filepath_saved = QString::fromStdString("");
+
+    // ====== Terrain-related
+    GLuint m_terrain_shader; // Stores id of terrain shader program - terrain.vert/.frag
+    GLuint m_terrain_vbo; // Stores id of terrain vbo
+    GLuint m_terrain_vao; // Stores id of terrain vao
+
+    std::vector<float> terrainData;
+    glm::mat4 terrainModelMatrix;
+
+    std::vector<float> terrainVboData;
+    int terrainStartIndex;
+    int terrainSize;
+
+    void setupTerrainData();
+
+    void paintTerrain();
 
     // ======= Weather-related
     int timeTracker = 0;
