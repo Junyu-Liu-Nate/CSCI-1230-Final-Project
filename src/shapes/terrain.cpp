@@ -3,6 +3,9 @@
 #include <cmath>
 #include <iostream>
 #include "glm/glm.hpp"
+#include "glm/gtc/constants.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtx/transform.hpp"
 
 // Constructor
 TerrainGenerator::TerrainGenerator()
@@ -60,15 +63,30 @@ std::vector<float> TerrainGenerator::generateTerrain() {
             int x2 = x + 1;
             int y2 = y + 1;
 
-            glm::vec3 p1 = getPosition(x1,y1);
-            glm::vec3 p2 = getPosition(x2,y1);
-            glm::vec3 p3 = getPosition(x2,y2);
-            glm::vec3 p4 = getPosition(x1,y2);
+//            glm::vec3 p1 = getPosition(x1,y1);
+//            glm::vec3 p2 = getPosition(x2,y1);
+//            glm::vec3 p3 = getPosition(x2,y2);
+//            glm::vec3 p4 = getPosition(x1,y2);
 
-            glm::vec3 n1 = getNormal(x1,y1);
-            glm::vec3 n2 = getNormal(x2,y1);
-            glm::vec3 n3 = getNormal(x2,y2);
-            glm::vec3 n4 = getNormal(x1,y2);
+//            glm::vec3 n1 = getNormal(x1,y1);
+//            glm::vec3 n2 = getNormal(x2,y1);
+//            glm::vec3 n3 = getNormal(x2,y2);
+//            glm::vec3 n4 = getNormal(x1,y2);
+
+            // Currently simply use a rotation matrix to rotate so the height of mountains are along y direction
+            glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1, 0, 0));
+
+            // Apply this rotation to vertices
+            glm::vec3 p1 = glm::vec3(rotationMatrix * glm::vec4(getPosition(x1, y1), 1.0));
+            glm::vec3 p2 = glm::vec3(rotationMatrix * glm::vec4(getPosition(x2, y1), 1.0));
+            glm::vec3 p3 = glm::vec3(rotationMatrix * glm::vec4(getPosition(x2, y2), 1.0));
+            glm::vec3 p4 = glm::vec3(rotationMatrix * glm::vec4(getPosition(x1, y2), 1.0));
+
+            // Apply this rotation to normals
+            glm::vec3 n1 = glm::vec3(rotationMatrix * glm::vec4(getNormal(x1, y1), 0.0));
+            glm::vec3 n2 = glm::vec3(rotationMatrix * glm::vec4(getNormal(x2, y1), 0.0));
+            glm::vec3 n3 = glm::vec3(rotationMatrix * glm::vec4(getNormal(x2, y2), 0.0));
+            glm::vec3 n4 = glm::vec3(rotationMatrix * glm::vec4(getNormal(x1, y2), 0.0));
 
             // tris 1
             // x1y1z1
@@ -76,17 +94,14 @@ std::vector<float> TerrainGenerator::generateTerrain() {
             // x2y2z3
             addPointToVector(p1, verts);
             addPointToVector(n1, verts);
-//            addPointToVector(getColor(n1, p1), verts);
-            addPointToVectorVec2(glm::vec2(0,0), verts);
+            addPointToVectorVec2(glm::vec2(0,0), verts); // Not using get color anymore, this is texture uv
 
             addPointToVector(p2, verts);
             addPointToVector(n2, verts);
-//            addPointToVector(getColor(n2, p2), verts);
             addPointToVectorVec2(glm::vec2(0,0), verts);
 
             addPointToVector(p3, verts);
             addPointToVector(n3, verts);
-//            addPointToVector(getColor(n3, p3), verts);
             addPointToVectorVec2(glm::vec2(0,0), verts);
 
             // tris 2
@@ -95,17 +110,14 @@ std::vector<float> TerrainGenerator::generateTerrain() {
             // x1y2z4
             addPointToVector(p1, verts);
             addPointToVector(n1, verts);
-//            addPointToVector(getColor(n1, p1), verts);
             addPointToVectorVec2(glm::vec2(0,0), verts);
 
             addPointToVector(p3, verts);
             addPointToVector(n3, verts);
-//            addPointToVector(getColor(n3, p3), verts);
             addPointToVectorVec2(glm::vec2(0,0), verts);
 
             addPointToVector(p4, verts);
             addPointToVector(n4, verts);
-//            addPointToVector(getColor(n4, p4), verts);
             addPointToVectorVec2(glm::vec2(0,0), verts);
         }
     }
