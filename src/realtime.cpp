@@ -4,6 +4,8 @@
 #include <QMouseEvent>
 #include <QKeyEvent>
 #include <iostream>
+#include <QDir>
+#include <QDebug>
 #include "settings.h"
 
 #include "utils/shaderloader.h"
@@ -87,6 +89,8 @@ void Realtime::initializeGL() {
     glGenBuffers(1, &m_terrain_vbo);
     // Generate terrain VAO
     glGenVertexArrays(1, &m_terrain_vao);
+    // Generate texture image
+    glGenTextures(1, &m_terrain_texture);
 
     // Texture shader - operates on FBO
     m_frame_shader = ShaderLoader::createShaderProgram("resources/shaders/frame.vert", "resources/shaders/frame.frag");
@@ -243,10 +247,10 @@ void Realtime::paintGeometry() {
             glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
 
             GLint loc3 = glGetUniformLocation(m_shader, ("lightDirections[" + std::to_string(lightCounter) + "]").c_str());
-            float angleRadians = glm::radians(static_cast<float>(timeTracker));
-            glm::vec3 rotatedLightDirection = glm::rotate(angleRadians, glm::vec3(0.0f, 0.0f, 1.0f)) * light.dir;
-            glUniform3f(loc3, rotatedLightDirection.x, rotatedLightDirection.y, rotatedLightDirection.z); // rotate the sun light
-            //                glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
+//            float angleRadians = glm::radians(static_cast<float>(timeTracker));
+//            glm::vec3 rotatedLightDirection = glm::rotate(angleRadians, glm::vec3(0.0f, 0.0f, 1.0f)) * light.dir;
+//            glUniform3f(loc3, rotatedLightDirection.x, rotatedLightDirection.y, rotatedLightDirection.z); // rotate the sun light
+            glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
         }
         if (light.type == LightType::LIGHT_POINT) {
             GLint loc1 = glGetUniformLocation(m_shader, ("lightTypes[" + std::to_string(lightCounter) + "]").c_str());
@@ -317,7 +321,10 @@ void Realtime::paintGeometry() {
             glUniform1f(glGetUniformLocation(m_shader, "isTexture"), 1.0);
 
             // Prepare texture image filepath
-            QString texture_filepath = QString::fromStdString(renderScene.sceneMetaData.shapes.at(i).primitive.material.textureMap.filename);
+//            QString texture_filepath = QString::fromStdString(renderScene.sceneMetaData.shapes.at(i).primitive.material.textureMap.filename);
+            texture_filepath_saved = ""; // Currently hardcoded to fix - this texture for snow should be fixed anyway
+            QString currentDir = QDir::currentPath();
+            QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/bark.png");
             // Only load texture image when texture image is changed
             if (!(texture_filepath == texture_filepath_saved)) {
                 // Obtain image from filepath
@@ -402,10 +409,10 @@ void Realtime::paintTerrain() {
             glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
 
             GLint loc3 = glGetUniformLocation(m_terrain_shader, ("lightDirections[" + std::to_string(lightCounter) + "]").c_str());
-            float angleRadians = glm::radians(static_cast<float>(timeTracker));
-            glm::vec3 rotatedLightDirection = glm::rotate(angleRadians, glm::vec3(0.0f, 0.0f, 1.0f)) * light.dir;
-            glUniform3f(loc3, rotatedLightDirection.x, rotatedLightDirection.y, rotatedLightDirection.z); // rotate the sun light
-            //                glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
+//            float angleRadians = glm::radians(static_cast<float>(timeTracker));
+//            glm::vec3 rotatedLightDirection = glm::rotate(angleRadians, glm::vec3(0.0f, 0.0f, 1.0f)) * light.dir;
+//            glUniform3f(loc3, rotatedLightDirection.x, rotatedLightDirection.y, rotatedLightDirection.z); // rotate the sun light
+            glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
         }
         if (light.type == LightType::LIGHT_POINT) {
             GLint loc1 = glGetUniformLocation(m_terrain_shader, ("lightTypes[" + std::to_string(lightCounter) + "]").c_str());
@@ -469,43 +476,44 @@ void Realtime::paintTerrain() {
 
     glm::vec4 terrainCAmbient = glm::vec4(0.2, 0.2, 0.2, 1);
     glm::vec4 terrainCDiffuse = glm::vec4(0.5, 0.5, 0.5, 1);
-    glm::vec4 terrainCSpecular = glm::vec4(0.5, 0.5, 0.5, 1);
+    glm::vec4 terrainCSpecular = glm::vec4(0.1, 0.1, 0.1, 1);
     glUniform4fv(glGetUniformLocation(m_terrain_shader, "cAmbient"), 1, &terrainCAmbient[0]);
     glUniform4fv(glGetUniformLocation(m_terrain_shader, "cDiffuse"), 1, &terrainCDiffuse[0]);
     glUniform4fv(glGetUniformLocation(m_terrain_shader, "cSpecular"), 1, &terrainCSpecular[0]);
 
-    bool isTerrainTexture = false; // Currently hardcoded it to be false
+    bool isTerrainTexture = true; // Currently hardcoded it to be false
     if (isTerrainTexture) {
-        glUniform1f(glGetUniformLocation(m_shader, "isTexture"), 1.0);
+        glUniform1f(glGetUniformLocation(m_terrain_shader, "isTexture"), 1.0);
 
         // Prepare texture image filepath
-//        QString texture_filepath = QString::fromStdString(renderScene.sceneMetaData.shapes.at(i).primitive.material.textureMap.filename);
-        QString texture_filepath = QString::fromStdString("");
+        texture_filepath_saved = "";
+        QString currentDir = QDir::currentPath();
+        QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/bark.png");
         // Only load texture image when texture image is changed
         if (!(texture_filepath == texture_filepath_saved)) {
             // Obtain image from filepath
-            m_image = QImage(texture_filepath);
-            if (m_image.isNull()) {
+            m_terrain_image = QImage(texture_filepath);
+            if (m_terrain_image.isNull()) {
                 // Handle error: Image didn't load
                 std::cerr << "Failed to load texture image: " << texture_filepath.toStdString() << std::endl;
                 std::cerr << "Continue with no texture image." << std::endl;
-                glUniform1f(glGetUniformLocation(m_shader, "isTexture"), -1.0);
+                glUniform1f(glGetUniformLocation(m_terrain_shader, "isTexture"), -1.0);
             }
             // Format image to fit OpenGL
-            m_image = m_image.convertToFormat(QImage::Format_RGBA8888).mirrored();
+            m_terrain_image = m_terrain_image.convertToFormat(QImage::Format_RGBA8888).mirrored();
             texture_filepath_saved = texture_filepath;
         }
-        if (m_image.isNull()) {
+        if (m_terrain_image.isNull()) {
             // Handle error: Image didn't load
             glUniform1f(glGetUniformLocation(m_terrain_shader, "isTexture"), -1.0);
         }
-        glGenTextures(1, &m_texture);
+        glGenTextures(1, &m_terrain_texture);
         // Set the active texture slot to texture slot 1
         glActiveTexture(GL_TEXTURE1);
         // Bind texture
-        glBindTexture(GL_TEXTURE_2D, m_texture);
+        glBindTexture(GL_TEXTURE_2D, m_terrain_texture);
         // Load image into texture
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_image.width(), m_image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, m_image.bits());
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_terrain_image.width(), m_terrain_image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, m_terrain_image.bits());
         // Set min and mag filters' interpolation mode to linear
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

@@ -93,11 +93,6 @@ void main() {
             diffuseColor = (materialBlend * vec3(textureColor) + (1.0 - materialBlend) * kd * vec3(cDiffuse)) * NdotL;
         }
 
-        // Rain specular
-        float rainSpecularFactor = rainTimer / 200.0;
-        float shininessRain = shininess * rainSpecularFactor;
-        shininessRain = clamp(shininessRain, 1.0, 30.0);
-
         // Add specular component to output color
         vec3 reflect = normalize(-surfaceToLight) + 2 * NdotL * normalize(vertexWorldSpaceNormal);
         float specularDot = dot(normalize(reflect), normalize(cameraWorldSpacePos.xyz - vertexWorldSpacePos));
@@ -119,6 +114,4 @@ void main() {
     fragColor.y = clamp(fragColor.y, 0.0f, 1.0f);
     fragColor.z = clamp(fragColor.z, 0.0f, 1.0f);
     fragColor.w = 1.0;
-
-//    fragColor = vec4(1.0, 1.0, 1.0, 1.0); // For debug
 }

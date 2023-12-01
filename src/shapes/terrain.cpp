@@ -94,15 +94,15 @@ std::vector<float> TerrainGenerator::generateTerrain() {
             // x2y2z3
             addPointToVector(p1, verts);
             addPointToVector(n1, verts);
-            addPointToVectorVec2(glm::vec2(0,0), verts); // Not using get color anymore, this is texture uv
+            addPointToVectorVec2(glm::vec2(p1.x,p1.z), verts); // Not using get color anymore, this is texture uv
 
             addPointToVector(p2, verts);
             addPointToVector(n2, verts);
-            addPointToVectorVec2(glm::vec2(0,0), verts);
+            addPointToVectorVec2(glm::vec2(p2.x,p2.z), verts);
 
             addPointToVector(p3, verts);
             addPointToVector(n3, verts);
-            addPointToVectorVec2(glm::vec2(0,0), verts);
+            addPointToVectorVec2(glm::vec2(p3.x,p3.z), verts);
 
             // tris 2
             // x1y1z1
@@ -110,15 +110,15 @@ std::vector<float> TerrainGenerator::generateTerrain() {
             // x1y2z4
             addPointToVector(p1, verts);
             addPointToVector(n1, verts);
-            addPointToVectorVec2(glm::vec2(0,0), verts);
+            addPointToVectorVec2(glm::vec2(p1.x,p1.z), verts);
 
             addPointToVector(p3, verts);
             addPointToVector(n3, verts);
-            addPointToVectorVec2(glm::vec2(0,0), verts);
+            addPointToVectorVec2(glm::vec2(p3.x,p3.z), verts);
 
             addPointToVector(p4, verts);
             addPointToVector(n4, verts);
-            addPointToVectorVec2(glm::vec2(0,0), verts);
+            addPointToVectorVec2(glm::vec2(p4.x,p4.z), verts);
         }
     }
     return verts;
@@ -166,7 +166,8 @@ float TerrainGenerator::getHeight(float x, float y) {
     float z1 = computePerlin(x * 2, y * 2) / 2;
     float z2 = computePerlin(x * 4, y * 4) / 4;
     float z3 = computePerlin(x * 8, y * 8) / 8;
-    z = z1 + z2 + z3;
+    float z4 = computePerlin(x * 16, y * 16) / 16;
+    z = z1 + z2 + z3 + z4;
 
     // Return 0 as placeholder
     return z;

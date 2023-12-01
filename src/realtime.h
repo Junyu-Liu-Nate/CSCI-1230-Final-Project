@@ -87,6 +87,9 @@ private:
     int terrainStartIndex;
     int terrainSize;
 
+    QImage m_terrain_image; // Texture image for terrain
+    GLuint m_terrain_texture; // Stores id of geometry texture mapping
+
     void setupTerrainData();
 
     void paintTerrain();

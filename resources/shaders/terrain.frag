@@ -45,7 +45,7 @@ void main() {
     // Need to renormalize vectors here if you want them to be normalized
 
     fragColor = vec4(0.0, 0.0, 0.0, 1.0);
-    // Add ambient component to output color
+    // ====== Add ambient component to output color
     fragColor.x += ka * cAmbient.x;
     fragColor.y += ka * cAmbient.y;
     fragColor.z += ka * cAmbient.z;
@@ -55,6 +55,7 @@ void main() {
         vec3 surfaceToLight;
         float falloff = 0;
 
+        // ====== Setup light info
         if (lightTypes[i] == 0) {
             att = 1.0;
             surfaceToLight = normalize(-lightDirections[i]);
@@ -81,52 +82,67 @@ void main() {
             }
         }
 
-        // Snow color
-        float easeZ = pow(vertexWorldSpacePos.z, 2) - 2 * pow(vertexWorldSpacePos.z, 3) + 0.05;
-        float heightValue = easeZ * 12.0f;
-        float angle = dot(vertexWorldSpaceNormal, vec3(0,0,1));
-        float easeNormal = 0.5 * angle * angle - 0.5 * angle;
-        float normalValue = easeNormal*0.5f;
-        float colorValue = heightValue + normalValue;
-        colorValue = colorValue * snowTimer / 200.0; // Use timer
-        colorValue = clamp(colorValue, 0.0f, 1.0f);
-        vec4 snowColor = vec4(colorValue, colorValue, colorValue, 1);
+        // ====== Snow color
+        vec4 snowColor = vec4(0.0);
+        float colorValue = 1 * snowTimer / 400.0; // Use timer
+        colorValue = clamp(colorValue, 0.5, 2.0);
+        if (vertexWorldSpacePos.y > 0.06) {
+            snowColor = vec4(colorValue, colorValue, colorValue, 1);
+        }
+        else {
+            if (dot(vertexWorldSpaceNormal, vec3(0,1,0)) > 0.9) {
+                snowColor = vec4(colorValue, colorValue, colorValue, 1);
+            }
+            else {
+                snowColor = vec4(0.5,0.5,0.5,1);
+            }
+        }
+//        float easeY = pow(vertexWorldSpacePos.y, 2) - 2 * pow(vertexWorldSpacePos.y, 3) + 0.05;
+//        float heightValue = easeY * 12.0f;
+//        float angle = dot(vertexWorldSpaceNormal, vec3(0,0,1));
+//        float easeNormal = 0.5 * angle * angle - 0.5 * angle;
+//        float normalValue = easeNormal*0.5f;
+//        float colorValue = heightValue + normalValue;
+//        colorValue = colorValue * snowTimer / 200.0; // Use timer
+//        colorValue = clamp(colorValue, 0.0f, 1.0f);
+//        vec4 snowColor = vec4(colorValue, colorValue, colorValue, 1);
 
-        // Add diffuse component to output color
+        // ====== Diffuse component
         float NdotL = dot(normalize(vertexWorldSpaceNormal), normalize(surfaceToLight));
         NdotL = clamp(NdotL, 0.0f, 1.0f);
 //        vec3 diffuseColor = kd * NdotL * vec3(cDiffuse);
         vec3 diffuseColor = kd * NdotL * vec3(snowColor + cDiffuse);
 
-        // Texture
+        // ====== Texture
         if (isTexture > 0) {
             vec4 textureColor = vec4(1);
             textureColor = texture(textureImgMapping, textureUV);
-            diffuseColor = (materialBlend * vec3(textureColor) + (1.0 - materialBlend) * kd * vec3(cDiffuse)) * NdotL;
+//            diffuseColor = (materialBlend * vec3(textureColor) + (1.0 - materialBlend) * kd * vec3(cDiffuse)) * NdotL;
+            diffuseColor = (materialBlend * vec3(textureColor) + (1.0 - materialBlend) * kd * vec3(snowColor + cDiffuse)) * NdotL;
         }
 
-        // Rain specular
+        // ====== Rain specular
         float rainSpecularFactor = rainTimer / 200.0;
         float shininessRain = shininess * rainSpecularFactor;
         shininessRain = clamp(shininessRain, 1.0, 30.0);
 
-        // Add specular component to output color
+        // ====== Specular component
         vec3 reflect = normalize(-surfaceToLight) + 2 * NdotL * normalize(vertexWorldSpaceNormal);
         float specularDot = dot(normalize(reflect), normalize(cameraWorldSpacePos.xyz - vertexWorldSpacePos));
         specularDot = clamp(specularDot, 0.0f, 1.0f);
         vec3 specularColor;
-//        if (shininess == 0.0) {
-//            specularColor = ks * 1 * vec3(cSpecular);
-//        }
-//        else{
-//            specularColor = ks * pow(specularDot, shininess) * vec3(cSpecular);
-//        }
-        if (shininessRain == 0.0) {
+        if (shininess == 0.0) {
             specularColor = ks * 1 * vec3(cSpecular);
         }
         else{
-            specularColor = ks * pow(specularDot, shininessRain) * vec3(cSpecular);
+            specularColor = ks * pow(specularDot, shininess) * vec3(cSpecular);
         }
+//        if (shininessRain == 0.0) {
+//            specularColor = ks * 1 * vec3(cSpecular);
+//        }
+//        else{
+//            specularColor = ks * pow(specularDot, shininessRain) * vec3(cSpecular);
+//        }
 
         fragColor.x += att * lightColors[i].x * (diffuseColor.x + specularColor.x) * (1-falloff);
         fragColor.y += att * lightColors[i].y * (diffuseColor.y + specularColor.y) * (1-falloff);
