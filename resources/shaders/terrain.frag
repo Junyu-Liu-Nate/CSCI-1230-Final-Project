@@ -5,6 +5,7 @@
 in vec3 vertexWorldSpacePos;
 in vec3 vertexWorldSpaceNormal;
 in vec2 textureUV;
+in float isAccumulate;
 
 // Declare an out vec4 for your output color
 out vec4 fragColor;
@@ -84,8 +85,9 @@ void main() {
 
         // ====== Snow color
         vec4 snowColor = vec4(0.0);
-        float colorValue = 1 * snowTimer / 400.0; // Use timer
-        colorValue = clamp(colorValue, 0.5, 2.0);
+//        float colorValue = 1 * snowTimer / 400.0; // Use timer
+//        colorValue = clamp(colorValue, 0.5, 2.0);
+        float colorValue = isAccumulate * 0.2;
         if (vertexWorldSpacePos.y > 0.06) {
             snowColor = vec4(colorValue, colorValue, colorValue, 1);
         }
@@ -110,15 +112,24 @@ void main() {
         // ====== Diffuse component
         float NdotL = dot(normalize(vertexWorldSpaceNormal), normalize(surfaceToLight));
         NdotL = clamp(NdotL, 0.0f, 1.0f);
-//        vec3 diffuseColor = kd * NdotL * vec3(cDiffuse);
-        vec3 diffuseColor = kd * NdotL * vec3(snowColor + cDiffuse);
+        vec3 diffuseColor;
+        if (isAccumulate > 0) {
+            diffuseColor = kd * NdotL * vec3(snowColor + cDiffuse);
+        }
+        else {
+            diffuseColor = kd * NdotL * vec3(cDiffuse);
+        }
 
         // ====== Texture
         if (isTexture > 0) {
             vec4 textureColor = vec4(1);
             textureColor = texture(textureImgMapping, textureUV);
-//            diffuseColor = (materialBlend * vec3(textureColor) + (1.0 - materialBlend) * kd * vec3(cDiffuse)) * NdotL;
-            diffuseColor = (materialBlend * vec3(textureColor) + (1.0 - materialBlend) * kd * vec3(snowColor + cDiffuse)) * NdotL;
+            if (isAccumulate > 0) {
+                diffuseColor = (materialBlend * vec3(textureColor) + (1.0 - materialBlend) * kd * vec3(snowColor + cDiffuse)) * NdotL;
+            }
+            else {
+                diffuseColor = (materialBlend * vec3(textureColor) + (1.0 - materialBlend) * kd * vec3(cDiffuse)) * NdotL;
+            }
         }
 
         // ====== Rain specular

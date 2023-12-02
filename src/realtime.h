@@ -90,6 +90,9 @@ private:
     QImage m_terrain_image; // Texture image for terrain
     GLuint m_terrain_texture; // Stores id of geometry texture mapping
 
+    GLuint m_collision_texture; // Store id of collision map
+    std::vector<GLuint> matrixData;
+
     void setupTerrainData();
 
     void paintTerrain();

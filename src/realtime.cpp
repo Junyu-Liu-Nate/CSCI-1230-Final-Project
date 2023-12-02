@@ -41,6 +41,8 @@ void Realtime::finish() {
     glDeleteRenderbuffers(1, &m_fbo_renderbuffer);
     glDeleteFramebuffers(1, &m_fbo);
 
+    glDeleteTextures(1, &m_collision_texture);
+
     this->doneCurrent();
 }
 
@@ -91,6 +93,7 @@ void Realtime::initializeGL() {
     glGenVertexArrays(1, &m_terrain_vao);
     // Generate texture image
     glGenTextures(1, &m_terrain_texture);
+    matrixData = std::vector<GLuint>(100 * 100, 0);
 
     // Texture shader - operates on FBO
     m_frame_shader = ShaderLoader::createShaderProgram("resources/shaders/frame.vert", "resources/shaders/frame.frag");
@@ -534,6 +537,30 @@ void Realtime::paintTerrain() {
     glm::vec4 cameraWorldSpacePos = renderScene.sceneCamera.cameraPos;
     glUniform4fv(glGetUniformLocation(m_terrain_shader, "cameraWorldSpacePos"), 1, &cameraWorldSpacePos[0]);
 
+    // Pass collision map as a texture
+    glGenTextures(1, &m_collision_texture);
+    // Set the active texture slot to texture slot 2
+    glActiveTexture(GL_TEXTURE2);
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, m_collision_texture);
+//    // Generate random integer data for the texture
+//    std::vector<GLuint> matrixData(100 * 100);
+//    for (auto& val : matrixData) {
+//        val = static_cast<GLuint>(rand() % 2); // Random value either 0 or 1
+//    }
+    for (int i = 0; i < 100; ++i) { // Update 10 random positions per frame
+        int randomIndex = rand() % (100 * 100);
+        matrixData[randomIndex]++;
+    }
+    // Upload the data to the texture
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32UI, 100, 100, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, matrixData.data());
+    // Set min and mag filters' interpolation mode to nearest
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // Set the texture.frag uniform for our texture
+    GLint textureUniform = glGetUniformLocation(m_terrain_shader, "textureCollisionMapping");
+    glUniform1i(textureUniform, 2);  // Set the sampler uniform to use texture unit 1
+
     // Draw Command
     glDrawArrays(GL_TRIANGLES, terrainStartIndex, terrainSize);
 
@@ -785,6 +812,8 @@ void Realtime::setupTerrainData() {
     terrainVboData = terrainData;
     terrainStartIndex = 0;
     terrainSize = terrainData.size() / 8;
+
+    matrixData = std::vector<GLuint>(100 * 100, 0);
 }
 
 std::vector<float> Realtime::calculateDistanceFactors() {
