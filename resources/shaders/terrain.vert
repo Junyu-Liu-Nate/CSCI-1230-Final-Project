@@ -11,7 +11,7 @@ layout(location = 2) in vec2 vertexTexture;
 out vec3 vertexWorldSpacePos;
 out vec3 vertexWorldSpaceNormal;
 out vec2 textureUV;
-out float isAccumulate;
+out float accumulateCount;
 
 // Declare a uniform mat4 to store model matrix
 uniform mat4 modelMatrix;
@@ -36,10 +36,10 @@ void main() {
     ivec2 texCoords = ivec2(collisionUV * vec2(texSize));
     uint value = texelFetch(textureCollisionMapping, texCoords, 0).r;
     if (value > 0u) {
-        isAccumulate = value;
+        accumulateCount = value;
     }
     else {
-        isAccumulate = -1;
+        accumulateCount = -1;
     }
 
 //    vec2 collisionUV = vec2(vertexWorldSpacePos.x / 100.0, vertexWorldSpacePos.z / 100.0);

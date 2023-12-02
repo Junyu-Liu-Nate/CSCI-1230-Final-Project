@@ -5,7 +5,7 @@
 in vec3 vertexWorldSpacePos;
 in vec3 vertexWorldSpaceNormal;
 in vec2 textureUV;
-in float isAccumulate;
+in float accumulateCount;
 
 // Declare an out vec4 for your output color
 out vec4 fragColor;
@@ -87,7 +87,7 @@ void main() {
         vec4 snowColor = vec4(0.0);
 //        float colorValue = 1 * snowTimer / 400.0; // Use timer
 //        colorValue = clamp(colorValue, 0.5, 2.0);
-        float colorValue = isAccumulate * 0.2;
+        float colorValue = accumulateCount * 0.1;
         if (vertexWorldSpacePos.y > 0.06) {
             snowColor = vec4(colorValue, colorValue, colorValue, 1);
         }
@@ -113,7 +113,7 @@ void main() {
         float NdotL = dot(normalize(vertexWorldSpaceNormal), normalize(surfaceToLight));
         NdotL = clamp(NdotL, 0.0f, 1.0f);
         vec3 diffuseColor;
-        if (isAccumulate > 0) {
+        if (accumulateCount > 0) {
             diffuseColor = kd * NdotL * vec3(snowColor + cDiffuse);
         }
         else {
@@ -124,7 +124,7 @@ void main() {
         if (isTexture > 0) {
             vec4 textureColor = vec4(1);
             textureColor = texture(textureImgMapping, textureUV);
-            if (isAccumulate > 0) {
+            if (accumulateCount > 0) {
                 diffuseColor = (materialBlend * vec3(textureColor) + (1.0 - materialBlend) * kd * vec3(snowColor + cDiffuse)) * NdotL;
             }
             else {
