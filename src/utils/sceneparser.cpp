@@ -103,5 +103,4 @@ void SceneParser::dfsParse(SceneNode* node, std::vector<RenderShapeData>& shapes
             dfsParse(childNode, shapes, lights, ctm);
         }
     }
-
 }
