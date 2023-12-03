@@ -371,7 +371,7 @@ void Realtime::paintGeometry() {
 
     // Pass shape info and draw shape
     std::cout << shapeStartIndices.size() << std::endl;
-    for (int i = 0; i < shapeStartIndices.size(); i++) {
+    for (int i = 1; i < shapeStartIndices.size(); i++) {
         // Pass in model matrix for shape i as a uniform into the shader program
         glUniformMatrix4fv(glGetUniformLocation(m_shader, "modelMatrix"), 1, GL_FALSE, &modelMatrixList[i][0][0]);
         glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrixList[i])));
