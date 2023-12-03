@@ -35,17 +35,17 @@ particle ParticleSystem::init_particle(){
     p.velocity=glm::vec3(0,-0.1,0);
 
     // generate accleration
-    p.acceleration=glm::vec3(0.01*glm::cos(angle),0,0.01*glm::sin(angle));
-    p.lifetime=std::min(y,5.0f);
+    p.acceleration=glm::vec3(0.05*glm::cos(angle),0,0.05*glm::sin(angle));
+    p.lifetime=std::min(3*y,5.0f);
     return p;
 
 }
 void ParticleSystem::update_ParticleSystem(float deltaTime){
     deltaT=deltaTime;
-    for(auto&particle:particles){
-        update_particle(particle);
-    }
-    PosData.clear();
+    QtConcurrent::map(particles, [this](particle &p) {
+        update_particle(p);
+    });
+
     update_particle_pos();
 }
 
@@ -57,8 +57,8 @@ void ParticleSystem::update_particle(particle & p){
         float angle=pi_dis(m_gen);
         p.position+=p.velocity*this->deltaT;
         p.velocity+=p.acceleration*this->deltaT;
-        p.acceleration=glm::vec3(glm::cos(angle),0,glm::sin(angle));
-        p.lifetime=p.lifetime-deltaT;
+        p.acceleration=glm::vec3(0.05*glm::cos(angle),0,0.05*glm::sin(angle));
+        p.lifetime=p.lifetime-0.1*deltaT-0.01*p.position.y;
     }
     else {
         //kill grounded or lifetime<0 particle and re-generate them
@@ -67,7 +67,7 @@ void ParticleSystem::update_particle(particle & p){
 }
 
 void ParticleSystem::update_particle_pos(){
-
+    PosData.clear();
     for(auto&particle:particles){
         PosData.push_back(particle.position.x);
         PosData.push_back(particle.position.y);
