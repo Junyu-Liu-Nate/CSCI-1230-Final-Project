@@ -19,7 +19,8 @@ find_package(Qt6 REQUIRED COMPONENTS Gui)
 find_package(Qt6 REQUIRED COMPONENTS OpenGL)
 find_package(Qt6 REQUIRED COMPONENTS OpenGLWidgets)
 find_package(Qt6 REQUIRED COMPONENTS Xml)
-
+find_package(Qt6 REQUIRED COMPONENTS Concurrent )
+find_package(OpenMP)
 # Allows you to include files from within those directories, without prefixing their filepaths
 include_directories(src)
 
@@ -51,6 +52,7 @@ add_executable(${PROJECT_NAME}
     src/shapes/mesh.h src/shapes/mesh.cpp
     src/shapes/common.h src/shapes/common.cpp
     src/shapes/terrain.h src/shapes/terrain.cpp
+    src/shapes/particle.h src/shapes/particle.cpp
 
 
 
@@ -71,7 +73,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt::OpenGL
     Qt::OpenGLWidgets
     Qt::Xml
+    Qt::Concurrent
     StaticGLEW
+#    OpenMP::OpenMP_CXX
 )
 
 # Specifies other files
