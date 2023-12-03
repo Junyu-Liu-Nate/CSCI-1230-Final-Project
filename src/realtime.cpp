@@ -7,13 +7,20 @@
 #include <QDir>
 #include <QDebug>
 #include "settings.h"
-
+#include <QtConcurrent>
 #include "utils/shaderloader.h"
 #include "glm/gtc/constants.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/transform.hpp"
 #include "settings.h"
 #include "utils/sceneparser.h"
+#include <omp.h>
+struct ShapeAndModel {
+    std::vector<float> shapeData;
+    glm::mat4 modelMatrix;
+};
+
+
 
 Realtime::Realtime(QWidget *parent)
     : QOpenGLWidget(parent)
@@ -773,11 +780,19 @@ void Realtime::setupShapeData() {
         shapeIdx++;
     }
     QString temp_imagePath = "/scenefiles/textures/snowflower.jpg";
-    for(int i=0;i<particles->getParticleNum();i++){
+    int particleNum = particles->getParticleNum();
+    std::vector<std::vector<float>> tempShapeDataList(particleNum);
+    std::vector<glm::mat4> tempModelMatrixList(particleNum);
+    #pragma omp parallel for
+    for(int i = 0; i < particleNum; ++i) {
         Sphere sphereShape;
-        sphereShape.updateParams(6, 6, false,1,1,temp_imagePath);
-        shapeDataList.push_back(sphereShape.generateShape());
-        modelMatrixList.push_back(particles->getModel()[i]);
+        sphereShape.updateParams(6, 6, false, 1, 1, temp_imagePath);
+        tempShapeDataList[i] = sphereShape.generateShape();
+        tempModelMatrixList[i] = particles->getModel()[i];
+    }
+    for(int i = 0; i < particleNum; ++i) {
+        shapeDataList.push_back(tempShapeDataList[i]);
+        modelMatrixList.push_back(tempModelMatrixList[i]);
     }
 
     int currentIndex = 0;
@@ -948,12 +963,12 @@ void Realtime::timerEvent(QTimerEvent *event) {
     int elapsedms   = m_elapsedTimer.elapsed();
     std::cout<<elapsedms<<std::endl;
     float deltaTime = elapsedms * 0.001f;
-    if(elapsedms%15==0){
+
     if (settings.sceneFilePath!="") {
         particles->update_ParticleSystem(deltaTime);
         setupShapesGL();
 //        update_particle_vbo();
-    }
+
     }
 //
 

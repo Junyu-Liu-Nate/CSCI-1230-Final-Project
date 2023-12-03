@@ -6,7 +6,7 @@
 #include <random>
 #include <vector>
 #include <glm/gtc/matrix_transform.hpp>
-
+#include <QtConcurrent/QtConcurrent>
 
 struct particle
 {
@@ -44,7 +44,7 @@ private:
 
     std::vector<particle>particles;
     std::vector<float>PosData;
-    const int maxparticles=1000;
+    const int maxparticles=2000;
 
     float deltaT=0.001;
     std::random_device rd;

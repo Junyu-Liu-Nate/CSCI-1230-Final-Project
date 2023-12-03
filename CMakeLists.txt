@@ -19,7 +19,8 @@ find_package(Qt6 REQUIRED COMPONENTS Gui)
 find_package(Qt6 REQUIRED COMPONENTS OpenGL)
 find_package(Qt6 REQUIRED COMPONENTS OpenGLWidgets)
 find_package(Qt6 REQUIRED COMPONENTS Xml)
-
+find_package(Qt6 REQUIRED COMPONENTS Concurrent )
+find_package(OpenMP)
 # Allows you to include files from within those directories, without prefixing their filepaths
 include_directories(src)
 
@@ -73,7 +74,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt::OpenGL
     Qt::OpenGLWidgets
     Qt::Xml
+    Qt::Concurrent
     StaticGLEW
+    OpenMP::OpenMP_CXX
+
 )
 
 # Specifies other files
