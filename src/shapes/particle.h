@@ -4,6 +4,9 @@
 #include "cube.h"
 #include <memory>
 #include <random>
+#include <vector>
+#include <glm/gtc/matrix_transform.hpp>
+
 
 struct particle
 {
@@ -21,6 +24,16 @@ public:
     ParticleSystem();
     void update_ParticleSystem(float deltaT);
     std::vector<float> getPosData();
+    int getParticleNum(){return maxparticles;}
+    std::vector<glm::mat4> getModel(){
+        std::vector<glm::mat4> particleModel;
+        for(auto & particle:particles){
+            glm::mat4 model=glm::translate(glm::mat4(1.0f), particle.position)*
+                         glm::scale(glm::mat4(1.0f), glm::vec3(0.007f, 0.007f, 0.007f));
+            particleModel.push_back(model);
+        }
+        return particleModel;
+    }
 private:
     void init_ParticleSystem();
 

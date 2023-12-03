@@ -91,6 +91,8 @@ private:
     GLuint m_particle_vbo;// Stores id of particle vbo
     GLuint m_particle_vao;// Stores id of particle vao
     std::vector<float> m_particle_data;
+    QImage m_particle_image; // Texture image for terrain
+
 
     // ====== Terrain-related
     GLuint m_terrain_shader; // Stores id of terrain shader program - terrain.vert/.frag
