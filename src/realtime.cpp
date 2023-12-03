@@ -57,7 +57,7 @@ void Realtime::initializeGL() {
     m_fbo_width = m_screen_width;
     m_fbo_height = m_screen_height;
 
-    m_timer = startTimer(1000/60);
+    m_timer = startTimer(1000/30);
     m_elapsedTimer.start();
 
     // ====== Initializing GL.
@@ -82,10 +82,35 @@ void Realtime::initializeGL() {
     glGenBuffers(1, &m_vbo);
     // Generate VAO
     glGenVertexArrays(1, &m_vao);
+
     // Generate texture image
     glGenTextures(1, &m_texture);
+    glActiveTexture(GL_TEXTURE3); // Use texture slot 3!!!
+    glBindTexture(GL_TEXTURE_2D, m_texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    QString currentDir = QDir::currentPath();
+    QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/bark.png");
+    m_image = QImage(texture_filepath);
+    if (m_image.isNull()) {
+        // Handle error: Image didn't load
+        std::cerr << "Failed to load texture image: " << texture_filepath.toStdString() << std::endl;
+        std::cerr << "Continue with no texture image." << std::endl;
+        glUniform1f(glGetUniformLocation(m_shader, "isTexture"), -1.0);
+    }
+    // Format image to fit OpenGL
+    m_image = m_image.convertToFormat(QImage::Format_RGBA8888).mirrored();
+    texture_filepath_saved = texture_filepath;
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_image.width(), m_image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, m_image.bits());
 
     // ====== Generate Terrain-related stuff
+    //Generate Particle-related stuff
+    m_particle_shader=ShaderLoader::createShaderProgram("resources/shaders/particle.vert", "resources/shaders/particle.frag");
+    glGenBuffers(1, &m_particle_vbo);
+    glGenVertexArrays(1, &m_particle_vao);
+    glGenTextures(1,&m_particle_texture);
+
+    // Generate Terrain-related stuff
     m_terrain_shader = ShaderLoader::createShaderProgram("resources/shaders/terrain.vert", "resources/shaders/terrain.frag");
     // Generate terrain VBO
     glGenBuffers(1, &m_terrain_vbo);
@@ -95,13 +120,13 @@ void Realtime::initializeGL() {
     glGenTextures(1, &m_terrain_texture);
     matrixData = std::vector<GLuint>(100 * 100, 0);
 
-    glGenTextures(1, &m_terrain_texture);
+    glGenTextures(1, &m_terrain_texture); // Use texture slot 1!!!
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, m_terrain_texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    QString currentDir = QDir::currentPath();
-    QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/mountain_1.png");
+    currentDir = QDir::currentPath();
+    texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/mountain_1.png");
     m_terrain_image = QImage(texture_filepath);
     if (m_terrain_image.isNull()) {
         // Handle error: Image didn't load
@@ -118,7 +143,7 @@ void Realtime::initializeGL() {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_terrain_image.width(), m_terrain_image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, m_terrain_image.bits());
 
     glGenTextures(1, &m_collision_texture);
-    glActiveTexture(GL_TEXTURE2);
+    glActiveTexture(GL_TEXTURE2); // Use texture slot 2!!!
     glBindTexture(GL_TEXTURE_2D, m_collision_texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -206,18 +231,22 @@ void Realtime::paintGL() {
     // Clear screen color and depth before painting
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+//    paintParticle();
+
     // ====== Draw with default shader
     paintGeometry();
 
     // ====== Draw with terrain shader
     paintTerrain();
 
+    // ====== Draw particle system
+
     // ====== Draw with frame shader
     // Bind the default framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, m_defaultFBO);
     glViewport(0, 0, m_screen_width, m_screen_height);
     // Clear the color and depth buffers
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Call paintFrame to draw our FBO color attachment texture
     paintFrame(m_fbo_texture);
 }
@@ -250,6 +279,7 @@ void Realtime::paintFrame(GLuint texture) {
 }
 
 void Realtime::paintGeometry() {
+//    paintParticle();
     // Bind Vertex Data
     glBindVertexArray(m_vao);
 
@@ -332,6 +362,7 @@ void Realtime::paintGeometry() {
     }
 
     // Pass shape info and draw shape
+    std::cout << shapeStartIndices.size() << std::endl;
     for (int i = 0; i < shapeStartIndices.size(); i++) {
         // Pass in model matrix for shape i as a uniform into the shader program
         glUniformMatrix4fv(glGetUniformLocation(m_shader, "modelMatrix"), 1, GL_FALSE, &modelMatrixList[i][0][0]);
@@ -341,59 +372,33 @@ void Realtime::paintGeometry() {
         // Pass in m_view and m_proj
         glUniformMatrix4fv(glGetUniformLocation(m_shader, "viewMatrix"), 1, GL_FALSE, &m_view[0][0]);
         glUniformMatrix4fv(glGetUniformLocation(m_shader, "projectMatrix"), 1, GL_FALSE, &m_proj[0][0]);
+//        glUniform4fv(glGetUniformLocation(m_shader, "cAmbient"), 1, &renderScene.sceneMetaData.shapes[i].primitive.material.cAmbient[0]);
+//        glUniform4fv(glGetUniformLocation(m_shader, "cDiffuse"), 1, &renderScene.sceneMetaData.shapes[i].primitive.material.cDiffuse[0]);
+//        glUniform4fv(glGetUniformLocation(m_shader, "cSpecular"), 1, &renderScene.sceneMetaData.shapes[i].primitive.material.cSpecular[0]);
+        glUniform4fv(glGetUniformLocation(m_shader, "cAmbient"), 1, &renderScene.sceneMetaData.shapes[0].primitive.material.cAmbient[0]);
+        glUniform4fv(glGetUniformLocation(m_shader, "cDiffuse"), 1, &renderScene.sceneMetaData.shapes[0].primitive.material.cDiffuse[0]);
+        glUniform4fv(glGetUniformLocation(m_shader, "cSpecular"), 1, &renderScene.sceneMetaData.shapes[0].primitive.material.cSpecular[0]);
 
-        glUniform4fv(glGetUniformLocation(m_shader, "cAmbient"), 1, &renderScene.sceneMetaData.shapes[i].primitive.material.cAmbient[0]);
-        glUniform4fv(glGetUniformLocation(m_shader, "cDiffuse"), 1, &renderScene.sceneMetaData.shapes[i].primitive.material.cDiffuse[0]);
-        glUniform4fv(glGetUniformLocation(m_shader, "cSpecular"), 1, &renderScene.sceneMetaData.shapes[i].primitive.material.cSpecular[0]);
-
-        if (renderScene.sceneMetaData.shapes.at(i).primitive.material.textureMap.isUsed) {
+        bool isShapeTexture = true;
+        if (isShapeTexture) {
             glUniform1f(glGetUniformLocation(m_shader, "isTexture"), 1.0);
 
-            // Prepare texture image filepath
-//            QString texture_filepath = QString::fromStdString(renderScene.sceneMetaData.shapes.at(i).primitive.material.textureMap.filename);
-            texture_filepath_saved = ""; // Currently hardcoded to fix - this texture for snow should be fixed anyway
-            QString currentDir = QDir::currentPath();
-            QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/bark.png");
-            // Only load texture image when texture image is changed
-            if (!(texture_filepath == texture_filepath_saved)) {
-                // Obtain image from filepath
-                m_image = QImage(texture_filepath);
-                if (m_image.isNull()) {
-                    // Handle error: Image didn't load
-                    std::cerr << "Failed to load texture image: " << texture_filepath.toStdString() << std::endl;
-                    std::cerr << "Continue with no texture image." << std::endl;
-                    glUniform1f(glGetUniformLocation(m_shader, "isTexture"), -1.0);
-                }
-                // Format image to fit OpenGL
-                m_image = m_image.convertToFormat(QImage::Format_RGBA8888).mirrored();
-                texture_filepath_saved = texture_filepath;
-            }
             if (m_image.isNull()) {
                 // Handle error: Image didn't load
                 glUniform1f(glGetUniformLocation(m_shader, "isTexture"), -1.0);
             }
-            glGenTextures(1, &m_texture);
-            // Set the active texture slot to texture slot 1
-            glActiveTexture(GL_TEXTURE1);
-            // Bind texture
-            glBindTexture(GL_TEXTURE_2D, m_texture);
-            // Load image into texture
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_image.width(), m_image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, m_image.bits());
-            // Set min and mag filters' interpolation mode to linear
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
             // Set the texture.frag uniform for our texture
             GLint textureUniform = glGetUniformLocation(m_shader, "textureImgMapping");
-            glUniform1i(textureUniform, 1);  // Set the sampler uniform to use texture unit 1
+            glUniform1i(textureUniform, 3);  // Set the sampler uniform to use texture unit 3
         }
         else {
             glUniform1f(glGetUniformLocation(m_shader, "isTexture"), -1.0);
         }
-        glUniform1f(glGetUniformLocation(m_shader, "materialBlend"), renderScene.sceneMetaData.shapes.at(i).primitive.material.blend);
+        glUniform1f(glGetUniformLocation(m_shader, "materialBlend"), 0.5);
 
         // Pass shininess and world-space camera position
-        glUniform1f(glGetUniformLocation(m_shader, "shininess"), renderScene.sceneMetaData.shapes[i].primitive.material.shininess);
+        glUniform1f(glGetUniformLocation(m_shader, "shininess"), renderScene.sceneMetaData.shapes[0].primitive.material.shininess);
         glm::vec4 cameraWorldSpacePos = renderScene.sceneCamera.cameraPos;
         glUniform4fv(glGetUniformLocation(m_shader, "cameraWorldSpacePos"), 1, &cameraWorldSpacePos[0]);
 
@@ -601,6 +606,7 @@ void Realtime::resizeGL(int w, int h) {
                                   metaData);
         setupShapesGL();
         setupTerrainGL();
+        setupParticle();
 
         // Setup camera data from the scene
         m_view = renderScene.sceneCamera.getViewMatrix();
@@ -627,6 +633,7 @@ void Realtime::sceneChanged() {
                               settings.farPlane,
                               metaData);
 
+    setupParticle();
     setupShapesGL();
     setupTerrainGL();
 
@@ -656,7 +663,7 @@ void Realtime::settingsChanged() {
 
             setupShapesGL();
             setupTerrainGL();
-
+            setupParticle();
             // Setup camera data from the scene
             m_view = renderScene.sceneCamera.getViewMatrix();
             m_proj = renderScene.sceneCamera.getProjectMatrix();
@@ -712,6 +719,11 @@ void Realtime::setupTerrainGL() {
 }
 
 void Realtime::setupShapeData() {
+    shapeDataList.clear();
+    modelMatrixList.clear();
+    vboData.clear();
+    shapeSizes.clear();
+    shapeStartIndices.clear();
     int shapeParameter1 = settings.shapeParameter1;
     int shapeParameter2 = settings.shapeParameter2;
 
@@ -774,6 +786,13 @@ void Realtime::setupShapeData() {
 
         modelMatrixList.push_back(shape.ctm);
         shapeIdx++;
+    }
+    QString temp_imagePath = "/scenefiles/textures/snowflower.jpg";
+    for(int i=0;i<particles->getParticleNum();i++){
+        Sphere sphereShape;
+        sphereShape.updateParams(6, 6, false,1,1,temp_imagePath);
+        shapeDataList.push_back(sphereShape.generateShape());
+        modelMatrixList.push_back(particles->getModel()[i]);
     }
 
     int currentIndex = 0;
@@ -944,7 +963,17 @@ void Realtime::mouseMoveEvent(QMouseEvent *event) {
 
 void Realtime::timerEvent(QTimerEvent *event) {
     int elapsedms   = m_elapsedTimer.elapsed();
+    std::cout<<elapsedms<<std::endl;
     float deltaTime = elapsedms * 0.001f;
+    if(elapsedms%15==0){
+    if (settings.sceneFilePath!="") {
+        particles->update_ParticleSystem(deltaTime);
+        setupShapesGL();
+//        update_particle_vbo();
+    }
+    }
+//
+
     m_elapsedTimer.restart();
 
     // Use deltaTime and m_keyMap here to move around
@@ -1042,3 +1071,132 @@ void Realtime::saveViewportImage(std::string filePath) {
     glDeleteRenderbuffers(1, &rbo);
     glDeleteFramebuffers(1, &fbo);
 }
+//void Realtime::paintParticle() {
+
+//    glEnable(GL_PROGRAM_POINT_SIZE);
+//    glBindVertexArray(m_particle_vao);
+//    glUseProgram(m_particle_shader);
+//    glUniformMatrix4fv(glGetUniformLocation(m_shader, "viewMatrix"), 1, GL_FALSE, &m_view[0][0]);
+//    glUniformMatrix4fv(glGetUniformLocation(m_particle_shader, "projectMatrix"), 1, GL_FALSE, &m_proj[0][0]);
+//    //glUniform1f(glGetUniformLocation(m_particle_shader, "pointSize"), 10);
+
+//    // 修改这里以绘制三角形
+//    glDrawArrays(GL_TRIANGLES, 0, 3); // 假设 m_particle_data 包含至少3个顶点
+
+//    glBindVertexArray(0);
+//    glBindTexture(GL_TEXTURE_2D, 0);
+//    glUseProgram(0);
+//}
+
+
+void Realtime::paintParticle() {
+
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glBindVertexArray(m_particle_vao);
+    glUseProgram(m_particle_shader);
+
+
+    bool isParticleTexture = true;
+    if (isParticleTexture) {
+        texture_filepath_saved = "";
+        QString currentDir = QDir::currentPath();
+        QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/snowflower.jpg");
+        glUniform1f(glGetUniformLocation(m_particle_shader, "useTexture"), 1.0);
+
+
+        if (texture_filepath_saved != texture_filepath) {
+           QImage particleImage(texture_filepath);
+           if (particleImage.isNull()) {
+                std::cerr << "Failed to load particle texture image: " << texture_filepath.toStdString() << std::endl;
+                glUniform1f(glGetUniformLocation(m_particle_shader, "useTexture"), 0);
+           } else {
+                particleImage = particleImage.convertToFormat(QImage::Format_RGBA8888).mirrored();
+
+                GLuint particleTexture;
+                glGenTextures(1, &particleTexture);
+                glActiveTexture(GL_TEXTURE1);
+                glBindTexture(GL_TEXTURE_2D, particleTexture);
+
+
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, particleImage.width(), particleImage.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, particleImage.bits());
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+
+                GLint textureUniform = glGetUniformLocation(m_particle_shader, "particleTexture");
+                glUniform1i(textureUniform, 1);
+
+                texture_filepath_saved = texture_filepath; // 更新已保存的纹理文件路径
+           }
+        }
+    } else {
+        glUniform1f(glGetUniformLocation(m_particle_shader, "isTexture"), -1.0);
+    }
+
+    int particle_size=10;
+    glUniformMatrix4fv(glGetUniformLocation(m_particle_shader, "projectMatrix"), 1, GL_FALSE, &m_proj[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(m_particle_shader, "viewMatrix"), 1, GL_FALSE, &m_view[0][0]);
+    glUniform1f(glGetUniformLocation(m_particle_shader, "pointSize"),particle_size );
+
+
+    glDrawArrays(GL_POINTS, 0, m_particle_data.size() / 3);
+
+
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glUseProgram(0);
+
+}
+void Realtime::update_particle_vbo(){
+
+    m_particle_data=particles->getPosData();
+//    m_particle_data = {
+//        // 第一个顶点坐标
+//        0.0f, 0.5f, 0.0f,
+//        // 第二个顶点坐标
+//        0.5f, -0.5f, 0.0f,
+//        // 第三个顶点坐标
+//        -0.5f, -0.5f, 0.0f
+//    };
+    glBindVertexArray(m_particle_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, m_particle_vbo);
+
+    glBufferData(GL_ARRAY_BUFFER,
+                 m_particle_data.size() * sizeof(float),
+                 m_particle_data.data(), GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+//    std::vector<float> bufferData(m_particle_data.size());
+//    glBindBuffer(GL_ARRAY_BUFFER, m_particle_vbo);
+//    glGetBufferSubData(GL_ARRAY_BUFFER, 0, m_particle_data.size() * sizeof(float), bufferData.data());
+//    if (bufferData.size() >= 2) {
+//        std::cout << "First element: " << bufferData[0] << std::endl;
+//        std::cout << "Second element: " << bufferData[1] << std::endl;
+//    } else {
+//        std::cerr << "bufferData does not contain enough elements." << std::endl;
+//    }
+
+}
+
+void Realtime::setupParticle(){
+    particles=std::make_shared<ParticleSystem>();
+}
+//void Realtime::setupParticleGL(){
+//    setupParticle();
+//    glBindVertexArray(m_particle_vao);
+//    glBindBuffer(GL_ARRAY_BUFFER, m_particle_vbo);
+
+//    glBufferData(GL_ARRAY_BUFFER,
+//                 m_particle_data.size() * sizeof(float),
+//                 m_particle_data.data(), GL_STATIC_DRAW);
+
+//    glEnableVertexAttribArray(0);
+//    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+//    glBindBuffer(GL_ARRAY_BUFFER, 0);
+//    glBindVertexArray(0);
+//}

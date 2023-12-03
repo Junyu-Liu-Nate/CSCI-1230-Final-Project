@@ -21,7 +21,7 @@
 #include "shapes/mesh.h"
 #include "shapes/terrain.h"
 #include "settings.h"
-
+#include "shapes/particle.h"
 class Realtime : public QOpenGLWidget
 {
 public:
@@ -75,6 +75,25 @@ private:
     int shapeParameter2Saved = settings.shapeParameter2;
     QString texture_filepath_saved = QString::fromStdString("");
 
+
+    // ====== Particle-related
+    void paintParticle();
+    void setupParticleGL();
+    void setupParticle();
+    void update_particle_vbo();
+
+
+
+    std::shared_ptr<ParticleSystem> particles = std::make_shared<ParticleSystem>();
+
+    GLuint m_particle_shader;//// Stores id of particle shader program
+    GLuint m_particle_texture;
+    GLuint m_particle_vbo;// Stores id of particle vbo
+    GLuint m_particle_vao;// Stores id of particle vao
+    std::vector<float> m_particle_data;
+    QImage m_particle_image; // Texture image for terrain
+
+
     // ====== Terrain-related
     GLuint m_terrain_shader; // Stores id of terrain shader program - terrain.vert/.frag
     GLuint m_terrain_vbo; // Stores id of terrain vbo
@@ -116,6 +135,7 @@ private:
     GLuint m_fbo;
     GLuint m_fbo_texture;
     GLuint m_fbo_renderbuffer;
+
 
     void makeFBO();
     void paintFrame(GLuint texture);

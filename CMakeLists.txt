@@ -51,6 +51,7 @@ add_executable(${PROJECT_NAME}
     src/shapes/mesh.h src/shapes/mesh.cpp
     src/shapes/common.h src/shapes/common.cpp
     src/shapes/terrain.h src/shapes/terrain.cpp
+    src/shapes/particle.h src/shapes/particle.cpp
 
 
 
@@ -61,6 +62,7 @@ add_subdirectory(glm)
 
 # GLEW: this creates its library and allows you to `#include "GL/glew.h"`
 add_library(StaticGLEW STATIC glew/src/glew.c
+
 )
 include_directories(${PROJECT_NAME} PRIVATE glew/include)
 
@@ -89,6 +91,9 @@ target_sources(final_project_other_files
   resources/shaders/frame.vert
   resources/shaders/terrain.vert
   resources/shaders/terrain.frag
+  resources/shaders/particle.frag
+  resources/shaders/particle.vert
+
 
 
 
