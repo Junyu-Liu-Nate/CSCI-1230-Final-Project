@@ -14,7 +14,8 @@
 #include "glm/gtx/transform.hpp"
 #include "settings.h"
 #include "utils/sceneparser.h"
-#include <omp.h>
+//#include <omp.h>
+
 struct ShapeAndModel {
     std::vector<float> shapeData;
     glm::mat4 modelMatrix;

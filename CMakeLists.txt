@@ -76,8 +76,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt::Xml
     Qt::Concurrent
     StaticGLEW
-    OpenMP::OpenMP_CXX
-
+#    OpenMP::OpenMP_CXX
 )
 
 # Specifies other files
