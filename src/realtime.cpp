@@ -98,7 +98,7 @@ void Realtime::initializeGL() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     QString currentDir = QDir::currentPath();
-    QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/bark.png");
+    QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/snowflower.jpg");
     m_image = QImage(texture_filepath);
     if (m_image.isNull()) {
         // Handle error: Image didn't load
@@ -802,7 +802,7 @@ void Realtime::setupShapeData() {
     #pragma omp parallel for
     for(int i = 0; i < particleNum; ++i) {
         Sphere sphereShape;
-        sphereShape.updateParams(6, 6, false, 1, 1, temp_imagePath);
+        sphereShape.updateParams(6, 6, true, 1, 1, temp_imagePath);
         tempShapeDataList[i] = sphereShape.generateShape();
         tempModelMatrixList[i] = particles->getModel()[i];
     }
