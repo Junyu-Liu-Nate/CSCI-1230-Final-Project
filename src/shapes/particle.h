@@ -13,6 +13,8 @@ struct particle
     glm::vec3 position;
     glm::vec3 velocity;
     glm::vec3 acceleration;
+    float theta;
+    float omega;
     float lifetime;
     bool grounded=false;
 
@@ -29,7 +31,8 @@ public:
         std::vector<glm::mat4> particleModel;
         for(auto & particle:particles){
             glm::mat4 model=glm::translate(glm::mat4(1.0f), particle.position)*
-                         glm::scale(glm::mat4(1.0f), glm::vec3(0.007f, 0.007f, 0.007f));
+                         glm::scale(glm::mat4(1.0f), glm::vec3(0.007f, 0.007f, 0.007f))*
+                              glm::rotate(glm::mat4(1.0f),particle.theta,glm::vec3(0,1,0));
             particleModel.push_back(model);
         }
         return particleModel;
@@ -44,7 +47,7 @@ private:
 
     std::vector<particle>particles;
     std::vector<float>PosData;
-    const int maxparticles=2000;
+    const int maxparticles=1000;
 
     float deltaT=0.001;
     std::random_device rd;

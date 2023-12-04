@@ -98,7 +98,7 @@ void Realtime::initializeGL() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     QString currentDir = QDir::currentPath();
-    QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/bark.png");
+    QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/snowflake.png");
     m_image = QImage(texture_filepath);
     if (m_image.isNull()) {
         // Handle error: Image didn't load
@@ -371,7 +371,7 @@ void Realtime::paintGeometry() {
 
     // Pass shape info and draw shape
     std::cout << shapeStartIndices.size() << std::endl;
-    for (int i = 1; i < shapeStartIndices.size(); i++) {
+    for (int i = 0; i < shapeStartIndices.size(); i++) {
         // Pass in model matrix for shape i as a uniform into the shader program
         glUniformMatrix4fv(glGetUniformLocation(m_shader, "modelMatrix"), 1, GL_FALSE, &modelMatrixList[i][0][0]);
         glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrixList[i])));
@@ -403,7 +403,7 @@ void Realtime::paintGeometry() {
         else {
             glUniform1f(glGetUniformLocation(m_shader, "isTexture"), -1.0);
         }
-        glUniform1f(glGetUniformLocation(m_shader, "materialBlend"), 0.5);
+        glUniform1f(glGetUniformLocation(m_shader, "materialBlend"), 0.4);
 
         // Pass shininess and world-space camera position
         glUniform1f(glGetUniformLocation(m_shader, "shininess"), renderScene.sceneMetaData.shapes[0].primitive.material.shininess);
@@ -795,17 +795,20 @@ void Realtime::setupShapeData() {
         modelMatrixList.push_back(shape.ctm);
         shapeIdx++;
     }
-    QString temp_imagePath = "/scenefiles/textures/snowflower.jpg";
+    QString temp_imagePath = "/scenefiles/textures/snowflake.png";
     int particleNum = particles->getParticleNum();
     std::vector<std::vector<float>> tempShapeDataList(particleNum);
     std::vector<glm::mat4> tempModelMatrixList(particleNum);
 #pragma omp parallel for
     for(int i = 0; i < particleNum; ++i) {
-        Sphere sphereShape;
-        sphereShape.updateParams(6, 6, false, 1, 1, temp_imagePath);
-        tempShapeDataList[i] = sphereShape.generateShape();
+        Square squareShape;
+//                Cube squareShape;
+//                Sphere squareShape;
+        squareShape.updateParams(true, 1, 1, temp_imagePath);
+        tempShapeDataList[i] = squareShape.generateShape();
         tempModelMatrixList[i] = particles->getModel()[i];
     }
+
     for(int i = 0; i < particleNum; ++i) {
         shapeDataList.push_back(tempShapeDataList[i]);
         modelMatrixList.push_back(tempModelMatrixList[i]);
@@ -979,7 +982,7 @@ void Realtime::mouseMoveEvent(QMouseEvent *event) {
 
 void Realtime::timerEvent(QTimerEvent *event) {
     int elapsedms   = m_elapsedTimer.elapsed();
-    std::cout<<elapsedms<<std::endl;
+//    std::cout<<elapsedms<<std::endl;
     float deltaTime = elapsedms * 0.001f;
 
     if (settings.sceneFilePath!="") {
@@ -1105,64 +1108,64 @@ void Realtime::saveViewportImage(std::string filePath) {
 //}
 
 
-void Realtime::paintParticle() {
+//void Realtime::paintParticle() {
 
-    glEnable(GL_PROGRAM_POINT_SIZE);
-    glBindVertexArray(m_particle_vao);
-    glUseProgram(m_particle_shader);
-
-
-    bool isParticleTexture = true;
-    if (isParticleTexture) {
-        texture_filepath_saved = "";
-        QString currentDir = QDir::currentPath();
-        QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/snowflower.jpg");
-        glUniform1f(glGetUniformLocation(m_particle_shader, "useTexture"), 1.0);
+//    glEnable(GL_PROGRAM_POINT_SIZE);
+//    glBindVertexArray(m_particle_vao);
+//    glUseProgram(m_particle_shader);
 
 
-        if (texture_filepath_saved != texture_filepath) {
-            QImage particleImage(texture_filepath);
-            if (particleImage.isNull()) {
-                std::cerr << "Failed to load particle texture image: " << texture_filepath.toStdString() << std::endl;
-                glUniform1f(glGetUniformLocation(m_particle_shader, "useTexture"), 0);
-            } else {
-                particleImage = particleImage.convertToFormat(QImage::Format_RGBA8888).mirrored();
-
-                GLuint particleTexture;
-                glGenTextures(1, &particleTexture);
-                glActiveTexture(GL_TEXTURE1);
-                glBindTexture(GL_TEXTURE_2D, particleTexture);
+//    bool isParticleTexture = true;
+//    if (isParticleTexture) {
+//        texture_filepath_saved = "";
+//        QString currentDir = QDir::currentPath();
+//        //QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/snowflake.jpg");
+//        glUniform1f(glGetUniformLocation(m_particle_shader, "useTexture"), 1.0);
 
 
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, particleImage.width(), particleImage.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, particleImage.bits());
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//        if (texture_filepath_saved != texture_filepath) {
+//            QImage particleImage(texture_filepath);
+//            if (particleImage.isNull()) {
+//                std::cerr << "Failed to load particle texture image: " << texture_filepath.toStdString() << std::endl;
+//                glUniform1f(glGetUniformLocation(m_particle_shader, "useTexture"), 0);
+//            } else {
+//                particleImage = particleImage.convertToFormat(QImage::Format_RGBA8888).mirrored();
+
+//                GLuint particleTexture;
+//                glGenTextures(1, &particleTexture);
+//                glActiveTexture(GL_TEXTURE1);
+//                glBindTexture(GL_TEXTURE_2D, particleTexture);
 
 
-                GLint textureUniform = glGetUniformLocation(m_particle_shader, "particleTexture");
-                glUniform1i(textureUniform, 1);
-
-                texture_filepath_saved = texture_filepath; // 更新已保存的纹理文件路径
-            }
-        }
-    } else {
-        glUniform1f(glGetUniformLocation(m_particle_shader, "isTexture"), -1.0);
-    }
-
-    int particle_size=10;
-    glUniformMatrix4fv(glGetUniformLocation(m_particle_shader, "projectMatrix"), 1, GL_FALSE, &m_proj[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(m_particle_shader, "viewMatrix"), 1, GL_FALSE, &m_view[0][0]);
-    glUniform1f(glGetUniformLocation(m_particle_shader, "pointSize"),particle_size );
+//                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, particleImage.width(), particleImage.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, particleImage.bits());
+//                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 
-    glDrawArrays(GL_POINTS, 0, m_particle_data.size() / 3);
+//                GLint textureUniform = glGetUniformLocation(m_particle_shader, "particleTexture");
+//                glUniform1i(textureUniform, 1);
+
+//                texture_filepath_saved = texture_filepath; // 更新已保存的纹理文件路径
+//            }
+//        }
+//    } else {
+//        glUniform1f(glGetUniformLocation(m_particle_shader, "isTexture"), -1.0);
+//    }
+
+//    int particle_size=10;
+//    glUniformMatrix4fv(glGetUniformLocation(m_particle_shader, "projectMatrix"), 1, GL_FALSE, &m_proj[0][0]);
+//    glUniformMatrix4fv(glGetUniformLocation(m_particle_shader, "viewMatrix"), 1, GL_FALSE, &m_view[0][0]);
+//    glUniform1f(glGetUniformLocation(m_particle_shader, "pointSize"),particle_size );
 
 
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glUseProgram(0);
+//    glDrawArrays(GL_POINTS, 0, m_particle_data.size() / 3);
 
-}
+
+//    glBindVertexArray(0);
+//    glBindTexture(GL_TEXTURE_2D, 0);
+//    glUseProgram(0);
+
+//}
 void Realtime::update_particle_vbo(){
 
     m_particle_data=particles->getPosData();

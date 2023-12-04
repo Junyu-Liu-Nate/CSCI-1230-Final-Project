@@ -53,6 +53,7 @@ add_executable(${PROJECT_NAME}
     src/shapes/common.h src/shapes/common.cpp
     src/shapes/terrain.h src/shapes/terrain.cpp
     src/shapes/particle.h src/shapes/particle.cpp
+    src/shapes/square.h src/shapes/square.cpp
 
 
 
@@ -75,7 +76,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt::Xml
     Qt::Concurrent
     StaticGLEW
-#    OpenMP::OpenMP_CXX
+    OpenMP::OpenMP_CXX
 )
 
 # Specifies other files
