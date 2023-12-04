@@ -13,6 +13,9 @@ public:
     int getResolution() { return m_resolution; };
     std::vector<float> generateTerrain();
 
+    // Takes a normalized (x, y) position, in range [0,1)
+    // Returns a height value, z, by sampling a noise function
+    float getHeight(float x, float y);
 private:
 
     // Member variables for terrain generation. You will not need to use these directly.
@@ -28,10 +31,6 @@ private:
     glm::vec3 getPosition(int row, int col);
 
     // ================== Students, please focus on the code below this point
-
-    // Takes a normalized (x, y) position, in range [0,1)
-    // Returns a height value, z, by sampling a noise function
-    float getHeight(float x, float y);
 
     // Computes the normal of a vertex by averaging neighbors
     glm::vec3 getNormal(int row, int col);

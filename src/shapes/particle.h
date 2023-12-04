@@ -37,6 +37,10 @@ public:
         }
         return particleModel;
     }
+
+    std::vector<particle>& getParticles() {
+        return particles;
+    }
 private:
     void init_ParticleSystem();
 

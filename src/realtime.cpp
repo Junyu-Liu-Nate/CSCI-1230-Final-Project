@@ -98,11 +98,8 @@ void Realtime::initializeGL() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     QString currentDir = QDir::currentPath();
-//<<<<<<< HEAD
-//    QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/snowflower.jpg");
-//=======
+
     QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/snowflake.png");
-//>>>>>>> origin/particle
     m_image = QImage(texture_filepath);
     if (m_image.isNull()) {
         // Handle error: Image didn't load
@@ -249,6 +246,7 @@ void Realtime::paintGL() {
     paintGeometry();
 
     // ====== Draw with terrain shader
+
     paintTerrain();
 
     // ====== Draw particle system
@@ -374,7 +372,6 @@ void Realtime::paintGeometry() {
     }
 
     // Pass shape info and draw shape
-    std::cout << shapeStartIndices.size() << std::endl;
     for (int i = 1; i < shapeStartIndices.size(); i++) {
         // Pass in model matrix for shape i as a uniform into the shader program
         glUniformMatrix4fv(glGetUniformLocation(m_shader, "modelMatrix"), 1, GL_FALSE, &modelMatrixList[i][0][0]);
@@ -552,15 +549,11 @@ void Realtime::paintTerrain() {
     // ====== Pass collision map as a texture
     // Bind texture
     glBindTexture(GL_TEXTURE_2D, m_collision_texture);
-    //    // Generate random integer data for the texture
-    //    std::vector<GLuint> matrixData(100 * 100);
-    //    for (auto& val : matrixData) {
-    //        val = static_cast<GLuint>(rand() % 2); // Random value either 0 or 1
-    //    }
-    for (int i = 0; i < 100; ++i) { // Update 100 random positions per frame
-        int randomIndex = rand() % (100 * 100);
-        matrixData[randomIndex]++;
-    }
+//    for (int i = 0; i < 100; ++i) { // Update 100 random positions per frame
+//        int randomIndex = rand() % (100 * 100);
+//        matrixData[randomIndex]++;
+//    }
+    updateTerrainCollisionMap();
     // Upload the data to the texture
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R32UI, 100, 100, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, matrixData.data());
     // Set the texture.frag uniform for our texture
@@ -583,6 +576,25 @@ void Realtime::paintTerrain() {
 
     // Deactivate the shader program by passing 0 into glUseProgram
     glUseProgram(0);
+}
+
+void Realtime::updateTerrainCollisionMap() {
+    for (auto &particle : particles->getParticles()) {
+        float x = particle.position.x;
+        float y = particle.position.y;
+        float z = particle.position.z;
+
+        float terrainHeight = terrainGenerator.getHeight(x, z);
+
+        if (y <= terrainHeight + 2) {
+            // TODO: Should kill this particle
+            // TODO: Should replace 100 with actual resolution
+            int row = x * 100;
+            int col = z * 100;
+            int accumulateIdx = row * 100 + col;
+            matrixData[accumulateIdx]++;
+        }
+    }
 }
 
 void Realtime::resizeGL(int w, int h) {
@@ -799,23 +811,18 @@ void Realtime::setupShapeData() {
         modelMatrixList.push_back(shape.ctm);
         shapeIdx++;
     }
+
     QString temp_imagePath = "/scenefiles/textures/snowflake.png";
     int particleNum = particles->getParticleNum();
     std::vector<std::vector<float>> tempShapeDataList(particleNum);
     std::vector<glm::mat4> tempModelMatrixList(particleNum);
-#pragma omp parallel for
+    #pragma omp parallel for
     for(int i = 0; i < particleNum; ++i) {
-//<<<<<<< HEAD
-//        Sphere sphereShape;
-//        sphereShape.updateParams(6, 6, true, 1, 1, temp_imagePath);
-//        tempShapeDataList[i] = sphereShape.generateShape();
-//=======
         Square squareShape;
 //                Cube squareShape;
 //                Sphere squareShape;
         squareShape.updateParams(true, 1, 1, temp_imagePath);
         tempShapeDataList[i] = squareShape.generateShape();
-//>>>>>>> origin/particle
         tempModelMatrixList[i] = particles->getModel()[i];
     }
 
