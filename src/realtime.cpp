@@ -98,7 +98,11 @@ void Realtime::initializeGL() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     QString currentDir = QDir::currentPath();
-    QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/snowflower.jpg");
+//<<<<<<< HEAD
+//    QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/snowflower.jpg");
+//=======
+    QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/snowflake.png");
+//>>>>>>> origin/particle
     m_image = QImage(texture_filepath);
     if (m_image.isNull()) {
         // Handle error: Image didn't load
@@ -239,7 +243,7 @@ void Realtime::paintGL() {
     // Clear screen color and depth before painting
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-//    paintParticle();
+    //    paintParticle();
 
     // ====== Draw with default shader
     paintGeometry();
@@ -254,7 +258,7 @@ void Realtime::paintGL() {
     glBindFramebuffer(GL_FRAMEBUFFER, m_defaultFBO);
     glViewport(0, 0, m_screen_width, m_screen_height);
     // Clear the color and depth buffers
-//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Call paintFrame to draw our FBO color attachment texture
     paintFrame(m_fbo_texture);
 }
@@ -287,7 +291,7 @@ void Realtime::paintFrame(GLuint texture) {
 }
 
 void Realtime::paintGeometry() {
-//    paintParticle();
+    //    paintParticle();
     // Bind Vertex Data
     glBindVertexArray(m_vao);
 
@@ -314,9 +318,9 @@ void Realtime::paintGeometry() {
             glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
 
             GLint loc3 = glGetUniformLocation(m_shader, ("lightDirections[" + std::to_string(lightCounter) + "]").c_str());
-//            float angleRadians = glm::radians(static_cast<float>(timeTracker));
-//            glm::vec3 rotatedLightDirection = glm::rotate(angleRadians, glm::vec3(0.0f, 0.0f, 1.0f)) * light.dir;
-//            glUniform3f(loc3, rotatedLightDirection.x, rotatedLightDirection.y, rotatedLightDirection.z); // rotate the sun light
+            //            float angleRadians = glm::radians(static_cast<float>(timeTracker));
+            //            glm::vec3 rotatedLightDirection = glm::rotate(angleRadians, glm::vec3(0.0f, 0.0f, 1.0f)) * light.dir;
+            //            glUniform3f(loc3, rotatedLightDirection.x, rotatedLightDirection.y, rotatedLightDirection.z); // rotate the sun light
             glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
         }
         if (light.type == LightType::LIGHT_POINT) {
@@ -380,9 +384,9 @@ void Realtime::paintGeometry() {
         // Pass in m_view and m_proj
         glUniformMatrix4fv(glGetUniformLocation(m_shader, "viewMatrix"), 1, GL_FALSE, &m_view[0][0]);
         glUniformMatrix4fv(glGetUniformLocation(m_shader, "projectMatrix"), 1, GL_FALSE, &m_proj[0][0]);
-//        glUniform4fv(glGetUniformLocation(m_shader, "cAmbient"), 1, &renderScene.sceneMetaData.shapes[i].primitive.material.cAmbient[0]);
-//        glUniform4fv(glGetUniformLocation(m_shader, "cDiffuse"), 1, &renderScene.sceneMetaData.shapes[i].primitive.material.cDiffuse[0]);
-//        glUniform4fv(glGetUniformLocation(m_shader, "cSpecular"), 1, &renderScene.sceneMetaData.shapes[i].primitive.material.cSpecular[0]);
+        //        glUniform4fv(glGetUniformLocation(m_shader, "cAmbient"), 1, &renderScene.sceneMetaData.shapes[i].primitive.material.cAmbient[0]);
+        //        glUniform4fv(glGetUniformLocation(m_shader, "cDiffuse"), 1, &renderScene.sceneMetaData.shapes[i].primitive.material.cDiffuse[0]);
+        //        glUniform4fv(glGetUniformLocation(m_shader, "cSpecular"), 1, &renderScene.sceneMetaData.shapes[i].primitive.material.cSpecular[0]);
         glUniform4fv(glGetUniformLocation(m_shader, "cAmbient"), 1, &renderScene.sceneMetaData.shapes[0].primitive.material.cAmbient[0]);
         glUniform4fv(glGetUniformLocation(m_shader, "cDiffuse"), 1, &renderScene.sceneMetaData.shapes[0].primitive.material.cDiffuse[0]);
         glUniform4fv(glGetUniformLocation(m_shader, "cSpecular"), 1, &renderScene.sceneMetaData.shapes[0].primitive.material.cSpecular[0]);
@@ -403,7 +407,7 @@ void Realtime::paintGeometry() {
         else {
             glUniform1f(glGetUniformLocation(m_shader, "isTexture"), -1.0);
         }
-        glUniform1f(glGetUniformLocation(m_shader, "materialBlend"), 0.5);
+        glUniform1f(glGetUniformLocation(m_shader, "materialBlend"), 0.4);
 
         // Pass shininess and world-space camera position
         glUniform1f(glGetUniformLocation(m_shader, "shininess"), renderScene.sceneMetaData.shapes[0].primitive.material.shininess);
@@ -447,9 +451,9 @@ void Realtime::paintTerrain() {
             glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
 
             GLint loc3 = glGetUniformLocation(m_terrain_shader, ("lightDirections[" + std::to_string(lightCounter) + "]").c_str());
-//            float angleRadians = glm::radians(static_cast<float>(timeTracker));
-//            glm::vec3 rotatedLightDirection = glm::rotate(angleRadians, glm::vec3(0.0f, 0.0f, 1.0f)) * light.dir;
-//            glUniform3f(loc3, rotatedLightDirection.x, rotatedLightDirection.y, rotatedLightDirection.z); // rotate the sun light
+            //            float angleRadians = glm::radians(static_cast<float>(timeTracker));
+            //            glm::vec3 rotatedLightDirection = glm::rotate(angleRadians, glm::vec3(0.0f, 0.0f, 1.0f)) * light.dir;
+            //            glUniform3f(loc3, rotatedLightDirection.x, rotatedLightDirection.y, rotatedLightDirection.z); // rotate the sun light
             glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
         }
         if (light.type == LightType::LIGHT_POINT) {
@@ -548,11 +552,11 @@ void Realtime::paintTerrain() {
     // ====== Pass collision map as a texture
     // Bind texture
     glBindTexture(GL_TEXTURE_2D, m_collision_texture);
-//    // Generate random integer data for the texture
-//    std::vector<GLuint> matrixData(100 * 100);
-//    for (auto& val : matrixData) {
-//        val = static_cast<GLuint>(rand() % 2); // Random value either 0 or 1
-//    }
+    //    // Generate random integer data for the texture
+    //    std::vector<GLuint> matrixData(100 * 100);
+    //    for (auto& val : matrixData) {
+    //        val = static_cast<GLuint>(rand() % 2); // Random value either 0 or 1
+    //    }
     for (int i = 0; i < 100; ++i) { // Update 100 random positions per frame
         int randomIndex = rand() % (100 * 100);
         matrixData[randomIndex]++;
@@ -795,17 +799,26 @@ void Realtime::setupShapeData() {
         modelMatrixList.push_back(shape.ctm);
         shapeIdx++;
     }
-    QString temp_imagePath = "/scenefiles/textures/snowflower.jpg";
+    QString temp_imagePath = "/scenefiles/textures/snowflake.png";
     int particleNum = particles->getParticleNum();
     std::vector<std::vector<float>> tempShapeDataList(particleNum);
     std::vector<glm::mat4> tempModelMatrixList(particleNum);
-    #pragma omp parallel for
+#pragma omp parallel for
     for(int i = 0; i < particleNum; ++i) {
-        Sphere sphereShape;
-        sphereShape.updateParams(6, 6, true, 1, 1, temp_imagePath);
-        tempShapeDataList[i] = sphereShape.generateShape();
+//<<<<<<< HEAD
+//        Sphere sphereShape;
+//        sphereShape.updateParams(6, 6, true, 1, 1, temp_imagePath);
+//        tempShapeDataList[i] = sphereShape.generateShape();
+//=======
+        Square squareShape;
+//                Cube squareShape;
+//                Sphere squareShape;
+        squareShape.updateParams(true, 1, 1, temp_imagePath);
+        tempShapeDataList[i] = squareShape.generateShape();
+//>>>>>>> origin/particle
         tempModelMatrixList[i] = particles->getModel()[i];
     }
+
     for(int i = 0; i < particleNum; ++i) {
         shapeDataList.push_back(tempShapeDataList[i]);
         modelMatrixList.push_back(tempModelMatrixList[i]);
@@ -856,7 +869,7 @@ std::vector<float> Realtime::calculateDistanceFactors() {
         float distance = glm::length(cameraWorldSpacePos - shapeWorldSpacePos);
         distanceFactors.push_back(distance);
         if (distance < minDistance) {
-           minDistance = distance;
+            minDistance = distance;
         }
 
     }
@@ -864,7 +877,7 @@ std::vector<float> Realtime::calculateDistanceFactors() {
     // Scale the distances
     if (minDistance > 0.0f) {
         for (float &factor : distanceFactors) {
-           factor = 1 / (factor / minDistance);
+            factor = 1 / (factor / minDistance);
         }
     }
 
@@ -979,16 +992,16 @@ void Realtime::mouseMoveEvent(QMouseEvent *event) {
 
 void Realtime::timerEvent(QTimerEvent *event) {
     int elapsedms   = m_elapsedTimer.elapsed();
-    std::cout<<elapsedms<<std::endl;
+//    std::cout<<elapsedms<<std::endl;
     float deltaTime = elapsedms * 0.001f;
 
     if (settings.sceneFilePath!="") {
         particles->update_ParticleSystem(deltaTime);
         setupShapesGL();
-//        update_particle_vbo();
+        //        update_particle_vbo();
 
     }
-//
+    //
 
     m_elapsedTimer.restart();
 
@@ -1105,75 +1118,75 @@ void Realtime::saveViewportImage(std::string filePath) {
 //}
 
 
-void Realtime::paintParticle() {
+//void Realtime::paintParticle() {
 
-    glEnable(GL_PROGRAM_POINT_SIZE);
-    glBindVertexArray(m_particle_vao);
-    glUseProgram(m_particle_shader);
-
-
-    bool isParticleTexture = true;
-    if (isParticleTexture) {
-        texture_filepath_saved = "";
-        QString currentDir = QDir::currentPath();
-        QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/snowflower.jpg");
-        glUniform1f(glGetUniformLocation(m_particle_shader, "useTexture"), 1.0);
+//    glEnable(GL_PROGRAM_POINT_SIZE);
+//    glBindVertexArray(m_particle_vao);
+//    glUseProgram(m_particle_shader);
 
 
-        if (texture_filepath_saved != texture_filepath) {
-           QImage particleImage(texture_filepath);
-           if (particleImage.isNull()) {
-                std::cerr << "Failed to load particle texture image: " << texture_filepath.toStdString() << std::endl;
-                glUniform1f(glGetUniformLocation(m_particle_shader, "useTexture"), 0);
-           } else {
-                particleImage = particleImage.convertToFormat(QImage::Format_RGBA8888).mirrored();
-
-                GLuint particleTexture;
-                glGenTextures(1, &particleTexture);
-                glActiveTexture(GL_TEXTURE1);
-                glBindTexture(GL_TEXTURE_2D, particleTexture);
+//    bool isParticleTexture = true;
+//    if (isParticleTexture) {
+//        texture_filepath_saved = "";
+//        QString currentDir = QDir::currentPath();
+//        //QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/snowflake.jpg");
+//        glUniform1f(glGetUniformLocation(m_particle_shader, "useTexture"), 1.0);
 
 
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, particleImage.width(), particleImage.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, particleImage.bits());
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//        if (texture_filepath_saved != texture_filepath) {
+//            QImage particleImage(texture_filepath);
+//            if (particleImage.isNull()) {
+//                std::cerr << "Failed to load particle texture image: " << texture_filepath.toStdString() << std::endl;
+//                glUniform1f(glGetUniformLocation(m_particle_shader, "useTexture"), 0);
+//            } else {
+//                particleImage = particleImage.convertToFormat(QImage::Format_RGBA8888).mirrored();
+
+//                GLuint particleTexture;
+//                glGenTextures(1, &particleTexture);
+//                glActiveTexture(GL_TEXTURE1);
+//                glBindTexture(GL_TEXTURE_2D, particleTexture);
 
 
-                GLint textureUniform = glGetUniformLocation(m_particle_shader, "particleTexture");
-                glUniform1i(textureUniform, 1);
-
-                texture_filepath_saved = texture_filepath; // 更新已保存的纹理文件路径
-           }
-        }
-    } else {
-        glUniform1f(glGetUniformLocation(m_particle_shader, "isTexture"), -1.0);
-    }
-
-    int particle_size=10;
-    glUniformMatrix4fv(glGetUniformLocation(m_particle_shader, "projectMatrix"), 1, GL_FALSE, &m_proj[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(m_particle_shader, "viewMatrix"), 1, GL_FALSE, &m_view[0][0]);
-    glUniform1f(glGetUniformLocation(m_particle_shader, "pointSize"),particle_size );
+//                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, particleImage.width(), particleImage.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, particleImage.bits());
+//                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 
-    glDrawArrays(GL_POINTS, 0, m_particle_data.size() / 3);
+//                GLint textureUniform = glGetUniformLocation(m_particle_shader, "particleTexture");
+//                glUniform1i(textureUniform, 1);
+
+//                texture_filepath_saved = texture_filepath; // 更新已保存的纹理文件路径
+//            }
+//        }
+//    } else {
+//        glUniform1f(glGetUniformLocation(m_particle_shader, "isTexture"), -1.0);
+//    }
+
+//    int particle_size=10;
+//    glUniformMatrix4fv(glGetUniformLocation(m_particle_shader, "projectMatrix"), 1, GL_FALSE, &m_proj[0][0]);
+//    glUniformMatrix4fv(glGetUniformLocation(m_particle_shader, "viewMatrix"), 1, GL_FALSE, &m_view[0][0]);
+//    glUniform1f(glGetUniformLocation(m_particle_shader, "pointSize"),particle_size );
 
 
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glUseProgram(0);
+//    glDrawArrays(GL_POINTS, 0, m_particle_data.size() / 3);
 
-}
+
+//    glBindVertexArray(0);
+//    glBindTexture(GL_TEXTURE_2D, 0);
+//    glUseProgram(0);
+
+//}
 void Realtime::update_particle_vbo(){
 
     m_particle_data=particles->getPosData();
-//    m_particle_data = {
-//        // 第一个顶点坐标
-//        0.0f, 0.5f, 0.0f,
-//        // 第二个顶点坐标
-//        0.5f, -0.5f, 0.0f,
-//        // 第三个顶点坐标
-//        -0.5f, -0.5f, 0.0f
-//    };
+    //    m_particle_data = {
+    //        // 第一个顶点坐标
+    //        0.0f, 0.5f, 0.0f,
+    //        // 第二个顶点坐标
+    //        0.5f, -0.5f, 0.0f,
+    //        // 第三个顶点坐标
+    //        -0.5f, -0.5f, 0.0f
+    //    };
     glBindVertexArray(m_particle_vao);
     glBindBuffer(GL_ARRAY_BUFFER, m_particle_vbo);
 
@@ -1186,15 +1199,15 @@ void Realtime::update_particle_vbo(){
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-//    std::vector<float> bufferData(m_particle_data.size());
-//    glBindBuffer(GL_ARRAY_BUFFER, m_particle_vbo);
-//    glGetBufferSubData(GL_ARRAY_BUFFER, 0, m_particle_data.size() * sizeof(float), bufferData.data());
-//    if (bufferData.size() >= 2) {
-//        std::cout << "First element: " << bufferData[0] << std::endl;
-//        std::cout << "Second element: " << bufferData[1] << std::endl;
-//    } else {
-//        std::cerr << "bufferData does not contain enough elements." << std::endl;
-//    }
+    //    std::vector<float> bufferData(m_particle_data.size());
+    //    glBindBuffer(GL_ARRAY_BUFFER, m_particle_vbo);
+    //    glGetBufferSubData(GL_ARRAY_BUFFER, 0, m_particle_data.size() * sizeof(float), bufferData.data());
+    //    if (bufferData.size() >= 2) {
+    //        std::cout << "First element: " << bufferData[0] << std::endl;
+    //        std::cout << "Second element: " << bufferData[1] << std::endl;
+    //    } else {
+    //        std::cerr << "bufferData does not contain enough elements." << std::endl;
+    //    }
 
 }
 

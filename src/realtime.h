@@ -22,6 +22,7 @@
 #include "shapes/terrain.h"
 #include "settings.h"
 #include "shapes/particle.h"
+#include "shapes/square.h"
 class Realtime : public QOpenGLWidget
 {
 public:
