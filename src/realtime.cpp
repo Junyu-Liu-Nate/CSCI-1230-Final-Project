@@ -586,13 +586,14 @@ void Realtime::updateTerrainCollisionMap() {
 
         float terrainHeight = terrainGenerator.getHeight(x, z);
 
-        if (y <= terrainHeight + 2) {
+        if (y <= terrainHeight + 3) {
             // TODO: Should kill this particle
             // TODO: Should replace 100 with actual resolution
             int row = x * 100;
             int col = z * 100;
             int accumulateIdx = row * 100 + col;
             matrixData[accumulateIdx]++;
+//            std::cout << row << ", " << col << ": " << matrixData[accumulateIdx] << std::endl;
         }
     }
 }

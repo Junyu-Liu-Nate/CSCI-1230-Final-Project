@@ -23,12 +23,21 @@
       ]
     },
     {
+      "lights": [
+        {
+          "type": "directional",
+          "color": [1.0, 1.0, 1.0],
+          "direction": [-3.0, -2.0, -1.0]
+        }
+      ]
+    },
+    {
       "groups": [
         {
           "primitives": [
             {
               "type": "cube",
-              "diffuse": [0.0, 1.0, 0.0],
+              "diffuse": [0.9, 0.9, 0.9],
               "specular": [1.0, 1.0, 1.0],
               "shininess": 25.0
             }

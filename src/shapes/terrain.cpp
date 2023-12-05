@@ -88,14 +88,14 @@ std::vector<float> TerrainGenerator::generateTerrain() {
             glm::vec3 n3 = glm::vec3(rotationMatrix * glm::vec4(getNormal(x2, y2), 0.0));
             glm::vec3 n4 = glm::vec3(rotationMatrix * glm::vec4(getNormal(x1, y2), 0.0));
 
-            p1.x -= 0.5;
-            p1.z += 0.5;
-            p2.x -= 0.5;
-            p2.z += 0.5;
-            p3.x -= 0.5;
-            p3.z += 0.5;
-            p4.x -= 0.5;
-            p4.z += 0.5;
+//            p1.x -= 0.5;
+            p1.z += 1.0;
+//            p2.x -= 0.5;
+            p2.z += 1.0;
+//            p3.x -= 0.5;
+            p3.z += 1.0;
+//            p4.x -= 0.5;
+            p4.z += 1.0;
 
             // tris 1
             // x1y1z1

@@ -31,7 +31,7 @@ void main() {
     vertexWorldSpaceNormal = normalize(vertexWorldSpaceNormal);
     textureUV = vertexTexture;
 
-    vec2 collisionUV = vec2(vertexWorldSpacePos.x / 100.0, vertexWorldSpacePos.z / 100.0);
+    vec2 collisionUV = vec2(vertexWorldSpacePos.x, vertexWorldSpacePos.z);
     ivec2 texSize = textureSize(textureCollisionMapping, 0);
     ivec2 texCoords = ivec2(collisionUV * vec2(texSize));
     uint value = texelFetch(textureCollisionMapping, texCoords, 0).r;
