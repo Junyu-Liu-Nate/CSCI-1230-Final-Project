@@ -7,13 +7,15 @@
 #include <vector>
 #include <glm/gtc/matrix_transform.hpp>
 #include <QtConcurrent/QtConcurrent>
-
+#include <algorithm>
 struct particle
 {
     glm::vec3 position;
     glm::vec3 velocity;
     glm::vec3 acceleration;
+    glm::vec3 axis;
     float theta;
+    float phi;
     float omega;
     float lifetime;
     bool grounded=false;
@@ -32,7 +34,7 @@ public:
         for(auto & particle:particles){
             glm::mat4 model=glm::translate(glm::mat4(1.0f), particle.position)*
                          glm::scale(glm::mat4(1.0f), glm::vec3(0.007f, 0.007f, 0.007f))*
-                              glm::rotate(glm::mat4(1.0f),particle.theta,glm::vec3(0,1,0));
+                              glm::rotate(glm::mat4(1.0f),particle.theta,particle.axis);
             particleModel.push_back(model);
         }
         return particleModel;

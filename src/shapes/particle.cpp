@@ -34,7 +34,9 @@ particle ParticleSystem::init_particle(){
     p.position=glm::vec3(x,y,z);
     p.velocity=glm::vec3(0,-0.1,0);
     p.theta=pi_dis(m_gen);
-    p.omega=(uniform_dis(m_gen)-0.5)/0.05;
+    p.phi=pi_dis(m_gen)/12;
+    p.omega=(uniform_dis(m_gen)-0.5)/1;
+    p.axis=glm::vec3(sin(p.phi)*sin(p.theta),cos(p.phi),sin(p.phi)*cos(p.theta));
     // generate accleration
     p.acceleration=glm::vec3(0.05*glm::cos(angle),0,0.05*glm::sin(angle));
     p.lifetime=std::min(3*y,5.0f);
@@ -61,7 +63,7 @@ void ParticleSystem::update_particle(particle & p){
         p.velocity+=p.acceleration*this->deltaT;
         p.acceleration=glm::vec3(0.05*glm::cos(angle),0,0.05*glm::sin(angle));
         p.theta+=p.omega*deltaT;
-        p.omega=(uniform_dis(m_gen)-0.5)*5;
+        p.omega+=std::clamp((uniform_dis(m_gen)-0.5)*0.25,-3.0,3.0);
         p.lifetime=p.lifetime-0.1*deltaT-0.01*p.position.y;
     }
     else {
