@@ -410,9 +410,12 @@ void Realtime::paintGeometry() {
         glUniform1f(glGetUniformLocation(m_shader, "shininess"), renderScene.sceneMetaData.shapes[0].primitive.material.shininess);
         glm::vec4 cameraWorldSpacePos = renderScene.sceneCamera.cameraPos;
         glUniform4fv(glGetUniformLocation(m_shader, "cameraWorldSpacePos"), 1, &cameraWorldSpacePos[0]);
-
+        // Blend Commend
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         // Draw Command
         glDrawArrays(GL_TRIANGLES, shapeStartIndices[i], shapeSizes[i]);
+        glDisable(GL_BLEND);
     }
 
     // Unbind Vertex Array
@@ -817,21 +820,26 @@ void Realtime::setupShapeData() {
     int particleNum = particles->getParticleNum();
     std::vector<std::vector<float>> tempShapeDataList(particleNum);
     std::vector<glm::mat4> tempModelMatrixList(particleNum);
-    #pragma omp parallel for
-    for(int i = 0; i < particleNum; ++i) {
-        Square squareShape;
-//                Cube squareShape;
-//                Sphere squareShape;
-        squareShape.updateParams(true, 1, 1, temp_imagePath);
-        tempShapeDataList[i] = squareShape.generateShape();
-        tempModelMatrixList[i] = particles->getModel()[i];
+
+    QVector<QFuture<void>> futures;
+    for (int i = 0; i < particleNum; ++i) {
+        futures.push_back(QtConcurrent::run([=, &tempShapeDataList, &tempModelMatrixList]() {
+            Square squareShape;
+            squareShape.updateParams(true, 1, 1, temp_imagePath);
+            tempShapeDataList[i] = squareShape.generateShape();
+            tempModelMatrixList[i] = particles->getModel()[i];
+        }));
     }
 
-    for(int i = 0; i < particleNum; ++i) {
+    // 等待所有任务完成
+    for (auto &future : futures) {
+        future.waitForFinished();
+    }
+
+    for (int i = 0; i < particleNum; ++i) {
         shapeDataList.push_back(tempShapeDataList[i]);
         modelMatrixList.push_back(tempModelMatrixList[i]);
     }
-
     int currentIndex = 0;
     for (const auto& shapeData : shapeDataList) {
         // Record the starting index of this shape.
