@@ -90,6 +90,7 @@ void main() {
         if (isTexture > 0) {
             vec4 textureColor = vec4(1);
             textureColor = texture(textureImgMapping, textureUV);
+            fragColor.a = textureColor.a;
             diffuseColor = (materialBlend * vec3(textureColor) + (1.0 - materialBlend) * kd * vec3(cDiffuse)) * NdotL;
         }
 
@@ -110,8 +111,9 @@ void main() {
         fragColor.z += att * lightColors[i].z * (diffuseColor.z + specularColor.z) * (1-falloff);
     }
 
-    fragColor.x = clamp(fragColor.x, 0.0f, 1.0f);
-    fragColor.y = clamp(fragColor.y, 0.0f, 1.0f);
-    fragColor.z = clamp(fragColor.z, 0.0f, 1.0f);
-    fragColor.w = 1.0;
+    fragColor.x =1.0f; /*clamp(fragColor.x, 0.0f, 1.0f);*/
+    fragColor.y =1.0f; /*clamp(fragColor.y, 0.0f, 1.0f);*/
+    fragColor.z = 1.0f;/*clamp(fragColor.z, 0.0f, 1.0f);*/
+    if (fragColor.a < 0.1)
+            discard;
 }
