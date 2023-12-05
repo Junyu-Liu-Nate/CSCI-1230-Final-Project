@@ -30,6 +30,9 @@ TerrainGenerator::TerrainGenerator()
         m_randVecLookup.push_back(glm::vec2(std::rand() * 2.0 / RAND_MAX - 1.0,
                                             std::rand() * 2.0 / RAND_MAX - 1.0));
     }
+
+    // Load heightmap image
+//    heightmapImage.load("scenefiles/heightmap/hm1.png");
 }
 
 // Destructor
@@ -168,18 +171,25 @@ float interpolate(float A, float B, float alpha) {
 // Returns a height value, z, by sampling a noise function
 float TerrainGenerator::getHeight(float x, float y) {
 
-    // Task 6: modify this call to produce noise of a different frequency
-    float z = computePerlin(x * 10, y * 10) / 2;
+//    // Task 7: combine multiple different octaves of noise to produce fractal perlin noise
+//    float z1 = computePerlin(x * 2, y * 2) / 2;
+//    float z2 = computePerlin(x * 4, y * 4) / 4;
+//    float z3 = computePerlin(x * 8, y * 8) / 8;
+//    float z4 = computePerlin(x * 16, y * 16) / 16;
+//    float z = z1 + z2 + z3 + z4;
 
-    // Task 7: combine multiple different octaves of noise to produce fractal perlin noise
-    float z1 = computePerlin(x * 2, y * 2) / 2;
-    float z2 = computePerlin(x * 4, y * 4) / 4;
-    float z3 = computePerlin(x * 8, y * 8) / 8;
-    float z4 = computePerlin(x * 16, y * 16) / 16;
-    z = z1 + z2 + z3 + z4;
+//    std::cout << "z = " << z << std::endl;
+//    return z;
 
-    // Return 0 as placeholder
-    return z;
+//    int pixelX = heightmapImage.size().width() * x;
+//    int pixelY = heightmapImage.size().height() * y;
+
+//    float z = qGray(heightmapImage.pixel(pixelX, pixelY)) / 255.0f;
+
+////    std::cout << "pixelX = " << pixelX << ", pixelY = " << pixelY << std::endl;
+////    std::cout << "z = " << z << std::endl;
+//    return z;
+    return 0.1f;
 }
 
 // Computes the normal of a vertex by averaging neighbors
