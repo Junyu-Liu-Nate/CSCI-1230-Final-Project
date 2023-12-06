@@ -264,6 +264,24 @@ void Realtime::paintGL() {
 void Realtime::paintFrame(GLuint texture) {
     glUseProgram(m_frame_shader);
 
+//    // Define gradient colors and direction
+//    glm::vec3 gradientStartColor = glm::vec3(0.25f, 0.25f, 0.5f); // start color
+//    glm::vec3 gradientEndColor = glm::vec3(0.5f, 0.25f, 0.25f);   // end color
+    glm::vec2 gradientDirection = glm::vec2(0.0f, 1.0f); // Direction from top to bottom
+
+    // Use class variable for light color to influence gradient colors
+    glm::vec3 warmGradientColor = glm::vec3(0.25f, 0.1f, 0.05f); // Slightly warm color for the gradient start
+    glm::vec3 coolGradientColor = glm::vec3(0.05f, 0.1f, 0.5f); // Cool color for the gradient end
+
+    // Calculate the interpolated gradient colors based on the light color
+    glm::vec3 gradientStartColor = glm::mix(warmGradientColor, sunlightColor, 0.3f); // Mix with a factor to avoid too much white
+    glm::vec3 gradientEndColor = glm::mix(coolGradientColor, sunlightColor, 0.3f);   // Mix with a factor to avoid too much white
+
+    // Set the gradient uniforms
+    glUniform3f(glGetUniformLocation(m_frame_shader, "gradientStartColor"), gradientStartColor.r, gradientStartColor.g, gradientStartColor.b);
+    glUniform3f(glGetUniformLocation(m_frame_shader, "gradientEndColor"), gradientEndColor.r, gradientEndColor.g, gradientEndColor.b);
+    glUniform2f(glGetUniformLocation(m_frame_shader, "gradientDirection"), gradientDirection.x, gradientDirection.y);
+
     // Set bool uniform on whether or not to filter the texture drawn
     glUniform1i(glGetUniformLocation(m_frame_shader, "isPerPixelFilter"), settings.perPixelFilter);
     glUniform1i(glGetUniformLocation(m_frame_shader, "isKernelFilter"), settings.kernelBasedFilter);
@@ -316,10 +334,10 @@ void Realtime::paintGeometry() {
             glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
 
             GLint loc3 = glGetUniformLocation(m_shader, ("lightDirections[" + std::to_string(lightCounter) + "]").c_str());
-            //            float angleRadians = glm::radians(static_cast<float>(timeTracker));
-            //            glm::vec3 rotatedLightDirection = glm::rotate(angleRadians, glm::vec3(0.0f, 0.0f, 1.0f)) * light.dir;
-            //            glUniform3f(loc3, rotatedLightDirection.x, rotatedLightDirection.y, rotatedLightDirection.z); // rotate the sun light
-            glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
+            float angleRadians = glm::radians(static_cast<float>(timeTracker));
+            glm::vec3 rotatedLightDirection = glm::rotate(angleRadians, glm::vec3(0.0f, 0.0f, 1.0f)) * light.dir;
+            glUniform3f(loc3, rotatedLightDirection.x, rotatedLightDirection.y, rotatedLightDirection.z); // rotate the sun light
+//            glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
         }
         if (light.type == LightType::LIGHT_POINT) {
             GLint loc1 = glGetUniformLocation(m_shader, ("lightTypes[" + std::to_string(lightCounter) + "]").c_str());
@@ -447,14 +465,30 @@ void Realtime::paintTerrain() {
             GLint loc1 = glGetUniformLocation(m_terrain_shader, ("lightTypes[" + std::to_string(lightCounter) + "]").c_str());
             glUniform1f(loc1, 0);
 
+            float angleRadians = glm::radians(static_cast<float>(timeTracker) * rotationSpeedScale);
+            glm::vec3 rotatedLightDirection = glm::rotate(angleRadians, glm::vec3(0.0f, 0.0f, 1.0f)) * light.dir;
+
+            // Normalize the light direction
+            glm::vec3 normalizedLightDirection = glm::normalize(rotatedLightDirection);
+            // Dot product with the y-axis
+            float dotProduct = glm::dot(normalizedLightDirection, glm::vec3(0.0f, 1.0f, 0.0f));
+            // Use the absolute value of the dot product to ensure we don't get negative values
+            float blendFactor = glm::abs(dotProduct);
+            // Define the warm and white colors
+            glm::vec3 warmColor = glm::vec3(1.0f, 0.5f, 0.1f); // Warm color
+            glm::vec3 whiteColor = glm::vec3(1.0f, 1.0f, 1.0f); // White color
+            // Interpolate between the warm color and the white color based on the angle with the y-axis
+            sunlightColor = glm::mix(warmColor, whiteColor, blendFactor);
+
             GLint loc2 = glGetUniformLocation(m_terrain_shader, ("lightColors[" + std::to_string(lightCounter) + "]").c_str());
-            glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
+//            glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
+            glUniform3f(loc2, sunlightColor.x, sunlightColor.y, sunlightColor.z);
 
             GLint loc3 = glGetUniformLocation(m_terrain_shader, ("lightDirections[" + std::to_string(lightCounter) + "]").c_str());
-            //            float angleRadians = glm::radians(static_cast<float>(timeTracker));
-            //            glm::vec3 rotatedLightDirection = glm::rotate(angleRadians, glm::vec3(0.0f, 0.0f, 1.0f)) * light.dir;
-            //            glUniform3f(loc3, rotatedLightDirection.x, rotatedLightDirection.y, rotatedLightDirection.z); // rotate the sun light
-            glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
+//            float angleRadians = glm::radians(static_cast<float>(timeTracker));
+//            glm::vec3 rotatedLightDirection = glm::rotate(angleRadians, glm::vec3(0.0f, 0.0f, 1.0f)) * light.dir;
+            glUniform3f(loc3, rotatedLightDirection.x, rotatedLightDirection.y, rotatedLightDirection.z); // rotate the sun light
+//            glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
         }
         if (light.type == LightType::LIGHT_POINT) {
             GLint loc1 = glGetUniformLocation(m_terrain_shader, ("lightTypes[" + std::to_string(lightCounter) + "]").c_str());

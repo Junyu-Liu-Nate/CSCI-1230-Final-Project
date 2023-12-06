@@ -6,6 +6,11 @@ in vec2 uvCoord;
 // Add a sampler2D uniform
 uniform sampler2D textureImg;
 
+// Gradient color uniforms
+uniform vec3 gradientStartColor; // The start color of the gradient
+uniform vec3 gradientEndColor;   // The end color of the gradient
+uniform vec2 gradientDirection;  // The direction of the gradient
+
 // Add bools on whether or not to filter the texture
 uniform bool isPerPixelFilter;
 uniform bool isKernelFilter;
@@ -16,11 +21,31 @@ uniform float screenHeight;
 
 out vec4 fragColor;
 
+// Helper function to calculate luminance
+float luminance(vec3 color) {
+    return dot(color, vec3(0.299, 0.587, 0.114));
+}
+
 void main()
 {
     fragColor = vec4(1);
     // Set fragColor using the sampler2D at the UV coordinate
     fragColor = texture(textureImg, uvCoord);
+
+    // Calculate the current pixel's luminance
+    float luma = luminance(fragColor.rgb);
+
+    // Check if the pixel is black or near black
+    if (luma < 0.01) { // Threshold can be adjusted as needed
+        // Calculate the gradient factor based on the UV coordinate and direction
+        float gradientFactor = dot(uvCoord, gradientDirection);
+
+        // Linearly interpolate between the start and end colors based on the gradient factor
+        vec3 gradientColor = mix(gradientStartColor, gradientEndColor, gradientFactor);
+
+        // Apply the gradient color to the black pixel
+        fragColor.rgb = gradientColor;
+    }
 
     if (isFXAA) {
 //        vec2 inverseScreenSize = vec2(1.0 / screenWidth, 1.0 / screenHeight);

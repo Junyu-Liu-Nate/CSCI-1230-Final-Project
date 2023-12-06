@@ -125,6 +125,9 @@ private:
     int rainTimer = 0;
     int sunTimer = 0;
 
+    float rotationSpeedScale = 0.5;
+    glm::vec3 sunlightColor = {0.0f,0.0f,0.0f};
+
     // ======= Frame-related
     GLuint m_defaultFBO;
     int m_fbo_width;
