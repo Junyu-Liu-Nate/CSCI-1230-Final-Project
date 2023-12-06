@@ -176,7 +176,8 @@ float TerrainGenerator::getHeight(float x, float y) {
     float z2 = computePerlin(x * 4, y * 4) / 4;
     float z3 = computePerlin(x * 8, y * 8) / 8;
     float z4 = computePerlin(x * 16, y * 16) / 16;
-    z = z1 + z2 + z3 + z4;
+    float z5 = computePerlin(x * 32, y * 32) / 32;
+    z = z1 + z2 + z3 + z4 + z5;
 
     // Return 0 as placeholder
     return z;

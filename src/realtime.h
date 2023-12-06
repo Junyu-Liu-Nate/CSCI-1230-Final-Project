@@ -127,6 +127,9 @@ private:
 
     float rotationSpeedScale = 0.5;
     glm::vec3 sunlightColor = {0.0f,0.0f,0.0f};
+    glm::vec3 sunlightDirection = {0.0f,0.0f,0.0f};
+
+    void updateSunlight(glm::vec4 originalDirection);
 
     // ======= Frame-related
     GLuint m_defaultFBO;
