@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "QtGui/qimage.h"
 #include "glm/glm.hpp"
 
 class TerrainGenerator
@@ -40,4 +41,6 @@ private:
 
     // Computes the intensity of Perlin noise at some point
     float computePerlin(float x, float y);
+
+    QImage heightmapImage;
 };
