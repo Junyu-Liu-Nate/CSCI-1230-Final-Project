@@ -111,9 +111,9 @@ void main() {
         fragColor.z += att * lightColors[i].z * (diffuseColor.z + specularColor.z) * (1-falloff);
     }
 
-    fragColor.x =1.0f; /*clamp(fragColor.x, 0.0f, 1.0f);*/
-    fragColor.y =1.0f; /*clamp(fragColor.y, 0.0f, 1.0f);*/
-    fragColor.z = 1.0f;/*clamp(fragColor.z, 0.0f, 1.0f);*/
+//    fragColor.x =1.0f; /*clamp(fragColor.x, 0.0f, 1.0f);*/
+//    fragColor.y =1.0f; /*clamp(fragColor.y, 0.0f, 1.0f);*/
+//    fragColor.z = 1.0f;/*clamp(fragColor.z, 0.0f, 1.0f);*/
     if (fragColor.a < 0.1)
             discard;
 }

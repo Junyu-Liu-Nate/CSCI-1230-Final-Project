@@ -166,4 +166,5 @@ void main() {
     fragColor.w = 1.0;
 
 //    fragColor = vec4(1.0, 1.0, 1.0, 1.0); // For debug
+    fragColor = vec4((vertexWorldSpaceNormal + 1) / 2, 1);
 }

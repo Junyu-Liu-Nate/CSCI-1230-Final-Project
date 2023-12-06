@@ -32,7 +32,9 @@ TerrainGenerator::TerrainGenerator()
     }
 
     // Load heightmap image
-//    heightmapImage.load("scenefiles/heightmap/hm1.png");
+    heightmapImage.load("scenefiles/heightmap/hm1.png");
+
+    std::cout << "terrain generated." << std::endl;
 }
 
 // Destructor
@@ -181,15 +183,19 @@ float TerrainGenerator::getHeight(float x, float y) {
 //    std::cout << "z = " << z << std::endl;
 //    return z;
 
-//    int pixelX = heightmapImage.size().width() * x;
-//    int pixelY = heightmapImage.size().height() * y;
+    int pixelX = heightmapImage.size().width() * x;
+    int pixelY = heightmapImage.size().height() * y;
 
-//    float z = qGray(heightmapImage.pixel(pixelX, pixelY)) / 255.0f;
+    if (pixelX < 0 || pixelY < 0 || pixelX >= 257 || pixelY >= 257) {
+        return 0.f;
+    }
+
+    float z = qGray(heightmapImage.pixel(pixelX, pixelY)) / 255.0f;
 
 ////    std::cout << "pixelX = " << pixelX << ", pixelY = " << pixelY << std::endl;
 ////    std::cout << "z = " << z << std::endl;
-//    return z;
-    return 0.1f;
+    return z;
+//    return 0.1f;
 }
 
 // Computes the normal of a vertex by averaging neighbors

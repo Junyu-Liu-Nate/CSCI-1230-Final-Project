@@ -243,7 +243,7 @@ void Realtime::paintGL() {
     //    paintParticle();
 
     // ====== Draw with default shader
-    paintGeometry();
+//    paintGeometry();
 
     // ====== Draw with terrain shader
 
@@ -957,8 +957,8 @@ void Realtime::mouseMoveEvent(QMouseEvent *event) {
 
         // Use deltaX and deltaY here to rotate
         // Constants for mouse sensitivity (adjust as needed)
-        const float sensitivityX = 0.001f; // Horizontal sensitivity
-        const float sensitivityY = 0.001f; // Vertical sensitivity
+        const float sensitivityX = 0.01f; // Horizontal sensitivity
+        const float sensitivityY = 0.01f; // Vertical sensitivity
 
         // Calculating rotation angles
         float angleX = -deltaX * sensitivityX; // Rotation angle for horizontal movement
@@ -1018,6 +1018,8 @@ void Realtime::timerEvent(QTimerEvent *event) {
 
     }
     //
+
+    deltaTime *= 20;
 
     m_elapsedTimer.restart();
 
