@@ -625,8 +625,9 @@ void Realtime::updateTerrainCollisionMap() {
 
         float terrainHeight = terrainGenerator.getHeight(x, z);
 
-        if (y <= terrainHeight + 3) {
+        if (y <= terrainHeight + 2) {
             // TODO: Should kill this particle
+//            particle.grounded = true;
             // TODO: Should replace 100 with actual resolution
             int row = x * 100;
             int col = z * 100;
