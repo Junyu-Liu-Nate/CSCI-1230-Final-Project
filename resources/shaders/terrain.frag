@@ -87,7 +87,7 @@ void main() {
         vec4 snowColor = vec4(0.0);
 //        float colorValue = 1 * snowTimer / 400.0; // Use timer
 //        colorValue = clamp(colorValue, 0.5, 2.0);
-        float colorValue = accumulateCount * 0.1;
+        float colorValue = accumulateCount * 0.5;
         if (vertexWorldSpacePos.y > 0.06) {
             snowColor = vec4(colorValue, colorValue, colorValue, 1);
         }

@@ -468,11 +468,11 @@ void Realtime::paintTerrain() {
             updateSunlight(light.dir);
 
             GLint loc2 = glGetUniformLocation(m_terrain_shader, ("lightColors[" + std::to_string(lightCounter) + "]").c_str());
-            //            glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
+//            glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
             glUniform3f(loc2, sunlightColor.x, sunlightColor.y, sunlightColor.z);
 
             GLint loc3 = glGetUniformLocation(m_terrain_shader, ("lightDirections[" + std::to_string(lightCounter) + "]").c_str());
-            //            glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
+//            glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
             glUniform3f(loc3, sunlightDirection.x, sunlightDirection.y, sunlightDirection.z); // rotate the sun light
         }
         if (light.type == LightType::LIGHT_POINT) {
@@ -625,9 +625,9 @@ void Realtime::updateTerrainCollisionMap() {
 
         float terrainHeight = terrainGenerator.getHeight(x, z);
 
-        if (y <= terrainHeight + 2) {
+        if (y <= terrainHeight) {
             // TODO: Should kill this particle
-//            particle.grounded = true;
+            particle.grounded = true;
             // TODO: Should replace 100 with actual resolution
             int row = x * 100;
             int col = z * 100;

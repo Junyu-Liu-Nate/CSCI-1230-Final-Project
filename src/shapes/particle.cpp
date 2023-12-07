@@ -64,7 +64,7 @@ void ParticleSystem::update_particle(particle & p){
         p.acceleration=glm::vec3(0.05*glm::cos(angle),0,0.05*glm::sin(angle));
         p.theta+=p.omega*deltaT;
         p.omega+=std::clamp((uniform_dis(m_gen)-0.5)*0.25,-3.0,3.0);
-        p.lifetime=p.lifetime-0.1*deltaT-0.01*p.position.y;
+//        p.lifetime=p.lifetime-0.1*deltaT-0.01*p.position.y;
     }
     else {
         //kill grounded or lifetime<0 particle and re-generate them
