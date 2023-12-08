@@ -106,15 +106,15 @@ std::vector<float> TerrainGenerator::generateTerrain() {
             // x2y2z3
             addPointToVector(p1, verts);
             addPointToVector(n1, verts);
-            addPointToVectorVec2(glm::vec2(p1.x,p1.z), verts); // Not using get color anymore, this is texture uv
+            addPointToVectorVec2(glm::vec2(p1.x,-p1.z), verts); // Not using get color anymore, this is texture uv
 
             addPointToVector(p2, verts);
             addPointToVector(n2, verts);
-            addPointToVectorVec2(glm::vec2(p2.x,p2.z), verts);
+            addPointToVectorVec2(glm::vec2(p2.x,-p2.z), verts);
 
             addPointToVector(p3, verts);
             addPointToVector(n3, verts);
-            addPointToVectorVec2(glm::vec2(p3.x,p3.z), verts);
+            addPointToVectorVec2(glm::vec2(p3.x,-p3.z), verts);
 
             // tris 2
             // x1y1z1
@@ -122,15 +122,15 @@ std::vector<float> TerrainGenerator::generateTerrain() {
             // x1y2z4
             addPointToVector(p1, verts);
             addPointToVector(n1, verts);
-            addPointToVectorVec2(glm::vec2(p1.x,p1.z), verts);
+            addPointToVectorVec2(glm::vec2(p1.x,-p1.z), verts);
 
             addPointToVector(p3, verts);
             addPointToVector(n3, verts);
-            addPointToVectorVec2(glm::vec2(p3.x,p3.z), verts);
+            addPointToVectorVec2(glm::vec2(p3.x,-p3.z), verts);
 
             addPointToVector(p4, verts);
             addPointToVector(n4, verts);
-            addPointToVectorVec2(glm::vec2(p4.x,p4.z), verts);
+            addPointToVectorVec2(glm::vec2(p4.x,-p4.z), verts);
         }
     }
     return verts;
@@ -187,7 +187,7 @@ float TerrainGenerator::getHeight(float x, float y) {
 
     float height = qGray(heightmapImage.pixel(i, j));
 
-    float z = height / 800.f + z1 + z2 + z3 + z4 + z5; // divided by 800 instead of 255 so that the terrain appears smoother
+    float z = height / 1800.f + z1 + z2 + z3 + z4 + z5; // divided by 800 instead of 255 so that the terrain appears smoother
     return z;
 }
 

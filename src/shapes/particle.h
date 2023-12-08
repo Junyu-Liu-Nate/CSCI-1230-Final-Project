@@ -40,6 +40,16 @@ public:
         return particleModel;
     }
 
+    glm::mat4 getParticleModelMatrix(particle* p) {
+        if (p) {
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), p->position) *
+                              glm::scale(glm::mat4(1.0f), glm::vec3(0.007f, 0.007f, 0.007f)) *
+                              glm::rotate(glm::mat4(1.0f), p->theta, p->axis);
+            return model;
+        }
+        return glm::mat4(1.0f); // Return an identity matrix if the pointer is null
+    }
+
     std::vector<particle>& getParticles() {
         return particles;
     }

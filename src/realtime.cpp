@@ -468,12 +468,12 @@ void Realtime::paintTerrain() {
             updateSunlight(light.dir);
 
             GLint loc2 = glGetUniformLocation(m_terrain_shader, ("lightColors[" + std::to_string(lightCounter) + "]").c_str());
-//            glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
-            glUniform3f(loc2, sunlightColor.x, sunlightColor.y, sunlightColor.z);
+            glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
+//            glUniform3f(loc2, sunlightColor.x, sunlightColor.y, sunlightColor.z);
 
             GLint loc3 = glGetUniformLocation(m_terrain_shader, ("lightDirections[" + std::to_string(lightCounter) + "]").c_str());
-//            glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
-            glUniform3f(loc3, sunlightDirection.x, sunlightDirection.y, sunlightDirection.z); // rotate the sun light
+            glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
+//            glUniform3f(loc3, sunlightDirection.x, sunlightDirection.y, sunlightDirection.z); // rotate the sun light
         }
         if (light.type == LightType::LIGHT_POINT) {
             GLint loc1 = glGetUniformLocation(m_terrain_shader, ("lightTypes[" + std::to_string(lightCounter) + "]").c_str());
@@ -623,17 +623,32 @@ void Realtime::updateTerrainCollisionMap() {
         float y = particle.position.y;
         float z = particle.position.z;
 
-        float terrainHeight = terrainGenerator.getHeight(x, z);
+        float terrainHeight = terrainGenerator.getHeight(x, 1-z);
 
         if (y <= terrainHeight) {
-            // TODO: Should kill this particle
+            if (x >=0 && x <= 1 && z >=0 && z <= 1) {
+                // Add shape info to static list
+                QString temp_imagePath = "/scenefiles/textures/snowflake.png";
+                Square squareShape;
+                squareShape.updateParams(true, 1, 1, temp_imagePath);
+                staticShapeDataList.push_back(squareShape.generateShape());
+                staticMatrixList.push_back(particles->getParticleModelMatrix(&particle));
+                staticParticleNum ++;
+
+                // Kill this particle
+                particle.grounded = true;
+
+                // TODO: May need to replace 100 with actual resolution
+                int row = z * 100;
+                int col = x * 100;
+                int accumulateIdx = row * 100 + col;
+                matrixData[accumulateIdx]++;
+            }
+        }
+
+        if (y < -1) {
+            // Kill this particle
             particle.grounded = true;
-            // TODO: Should replace 100 with actual resolution
-            int row = x * 100;
-            int col = z * 100;
-            int accumulateIdx = row * 100 + col;
-            matrixData[accumulateIdx]++;
-//            std::cout << row << ", " << col << ": " << matrixData[accumulateIdx] << std::endl;
         }
     }
 }
@@ -876,6 +891,10 @@ void Realtime::setupShapeData() {
     for (int i = 0; i < particleNum; ++i) {
         shapeDataList.push_back(tempShapeDataList[i]);
         modelMatrixList.push_back(tempModelMatrixList[i]);
+    }
+    for (int i = 0; i < staticParticleNum; ++i) {
+        shapeDataList.push_back(staticShapeDataList[i]);
+        modelMatrixList.push_back(staticMatrixList[i]);
     }
     int currentIndex = 0;
     for (const auto& shapeData : shapeDataList) {

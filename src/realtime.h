@@ -94,6 +94,10 @@ private:
     std::vector<float> m_particle_data;
     QImage m_particle_image; // Texture image for terrain
 
+    int staticParticleNum = 0;
+    std::vector<std::vector<float>> staticShapeDataList;
+    std::vector<glm::mat4> staticMatrixList;
+
 
     // ====== Terrain-related
     GLuint m_terrain_shader; // Stores id of terrain shader program - terrain.vert/.frag
