@@ -83,11 +83,9 @@ private:
     void setupParticle();
     void update_particle_vbo();
 
-
-
     std::shared_ptr<ParticleSystem> particles = std::make_shared<ParticleSystem>();
 
-    GLuint m_particle_shader;//// Stores id of particle shader program
+    GLuint m_particle_shader; // Stores id of particle shader program
     GLuint m_particle_texture;
     GLuint m_particle_vbo;// Stores id of particle vbo
     GLuint m_particle_vao;// Stores id of particle vao
@@ -123,16 +121,20 @@ private:
     void updateTerrainCollisionMap();
     void paintTerrain();
 
+    float accumulateRate = 0.001;
+
     // ======= Weather-related
     int timeTracker = 0;
     int snowTimer = 0;
     int rainTimer = 0;
     int sunTimer = 0;
 
-    float rotationSpeedScale = 0.5;
+    float rotationSpeedScale = 0.25;
     glm::vec3 sunlightColor = {0.0f,0.0f,0.0f};
+    glm::vec4 sunlightOriginalDirection = {-1,0,0,0};
     glm::vec3 sunlightDirection = {0.0f,0.0f,0.0f};
 
+    void setSunlightDirectionAccordingToTime();
     void updateSunlight(glm::vec4 originalDirection);
 
     // ======= Frame-related

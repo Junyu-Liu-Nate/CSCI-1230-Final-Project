@@ -24,6 +24,8 @@ uniform mat4 projectMatrix;
 //uniform sampler2D textureCollisionMapping;
 uniform usampler2D textureCollisionMapping;
 
+uniform float accumulateRate;
+
 void main() {
     // Compute the world-space position and normal, then pass them to the fragment shader
     vertexWorldSpacePos = vec3(modelMatrix * vec4(vertexObjectsSpacePos, 1.0));
@@ -37,6 +39,7 @@ void main() {
     uint value = texelFetch(textureCollisionMapping, texCoords, 0).r;
     if (value > 0u) {
         accumulateCount = value;
+        vertexWorldSpacePos.y += accumulateRate * value;
     }
     else {
         accumulateCount = -1;

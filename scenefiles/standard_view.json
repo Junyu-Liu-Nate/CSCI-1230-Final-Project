@@ -86,7 +86,7 @@
       "lights": [
         {
           "type": "point",
-          "color": [0.3, 0.3, 0.3],
+          "color": [0.8, 0.8, 0.8],
           "attenuationCoeff": [1, 0, 0]
         }
       ]

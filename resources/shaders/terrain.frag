@@ -45,11 +45,38 @@ uniform int sunTimer;
 void main() {
     // Need to renormalize vectors here if you want them to be normalized
 
+    // ====== Snow color
+    vec4 snowColor = vec4(0.0);
+//        float colorValue = 1 * snowTimer / 400.0; // Use timer
+//        colorValue = clamp(colorValue, 0.5, 2.0);
+    float colorValue = accumulateCount * 0.2;
+    colorValue = clamp(colorValue, 0.0, 0.8);
+    if (vertexWorldSpacePos.y > 0.06) {
+        snowColor = vec4(colorValue, colorValue, colorValue, 1);
+    }
+    else {
+        if (dot(vertexWorldSpaceNormal, vec3(0,1,0)) > 0.9) {
+            snowColor = vec4(colorValue, colorValue, colorValue, 1);
+        }
+        else {
+            snowColor = vec4(0.5,0.5,0.5,1);
+        }
+    }
+//        float easeY = pow(vertexWorldSpacePos.y, 2) - 2 * pow(vertexWorldSpacePos.y, 3) + 0.05;
+//        float heightValue = easeY * 12.0f;
+//        float angle = dot(vertexWorldSpaceNormal, vec3(0,0,1));
+//        float easeNormal = 0.5 * angle * angle - 0.5 * angle;
+//        float normalValue = easeNormal*0.5f;
+//        float colorValue = heightValue + normalValue;
+//        colorValue = colorValue * snowTimer / 200.0; // Use timer
+//        colorValue = clamp(colorValue, 0.0f, 1.0f);
+//        vec4 snowColor = vec4(colorValue, colorValue, colorValue, 1);
+
     fragColor = vec4(0.0, 0.0, 0.0, 1.0);
     // ====== Add ambient component to output color
-    fragColor.x += ka * cAmbient.x;
-    fragColor.y += ka * cAmbient.y;
-    fragColor.z += ka * cAmbient.z;
+    fragColor.x += ka * cAmbient.x + colorValue;
+    fragColor.y += ka * cAmbient.y + colorValue;
+    fragColor.z += ka * cAmbient.z + colorValue;
 
     for (int i = 0; i < 8; i++) {
         float att;
@@ -82,32 +109,6 @@ void main() {
                 falloff = 1;
             }
         }
-
-        // ====== Snow color
-        vec4 snowColor = vec4(0.0);
-//        float colorValue = 1 * snowTimer / 400.0; // Use timer
-//        colorValue = clamp(colorValue, 0.5, 2.0);
-        float colorValue = accumulateCount * 0.5;
-        if (vertexWorldSpacePos.y > 0.06) {
-            snowColor = vec4(colorValue, colorValue, colorValue, 1);
-        }
-        else {
-            if (dot(vertexWorldSpaceNormal, vec3(0,1,0)) > 0.9) {
-                snowColor = vec4(colorValue, colorValue, colorValue, 1);
-            }
-            else {
-                snowColor = vec4(0.5,0.5,0.5,1);
-            }
-        }
-//        float easeY = pow(vertexWorldSpacePos.y, 2) - 2 * pow(vertexWorldSpacePos.y, 3) + 0.05;
-//        float heightValue = easeY * 12.0f;
-//        float angle = dot(vertexWorldSpaceNormal, vec3(0,0,1));
-//        float easeNormal = 0.5 * angle * angle - 0.5 * angle;
-//        float normalValue = easeNormal*0.5f;
-//        float colorValue = heightValue + normalValue;
-//        colorValue = colorValue * snowTimer / 200.0; // Use timer
-//        colorValue = clamp(colorValue, 0.0f, 1.0f);
-//        vec4 snowColor = vec4(colorValue, colorValue, colorValue, 1);
 
         // ====== Diffuse component
         float NdotL = dot(normalize(vertexWorldSpaceNormal), normalize(surfaceToLight));
