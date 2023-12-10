@@ -2,6 +2,7 @@
 #define PARTICLE_H
 #include "sphere.h"
 #include "cube.h"
+#include "settings.h"
 #include <memory>
 #include <random>
 #include <vector>
@@ -83,6 +84,7 @@ private:
     std::random_device rd;
     std::mt19937 m_gen=std::mt19937(rd());
 
+    float velocityValue = settings.speed * 0.2;
 };
 
 #endif // PARTICLE_H

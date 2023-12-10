@@ -750,8 +750,9 @@ void Realtime::sceneChanged() {
 
 void Realtime::settingsChanged() {
   
-     int oldNum=particles->getParticleNum();
-    int newNum=int(1000*((1.0f*settings.intensity)/100.f));
+    int oldNum=particles->getParticleNum();
+//    int newNum=int(1000*((1.0f*settings.intensity)/100.f));
+    int newNum=settings.intensity;
     bool flagIntensity=std::abs(oldNum-newNum)>100?true:false;
     if (flagIntensity||settings.bumpiness != shapeParameter1Saved || settings.shapeParameter2 != shapeParameter2Saved) {
         shapeDataList.clear();
@@ -769,9 +770,13 @@ void Realtime::settingsChanged() {
                                       settings.nearPlane,
                                       settings.farPlane,
                                       metaData);
-            particles->updateNum(newNum);
+//            particles->updateNum(newNum);
 //                std::make_shared<ParticleSystem>(newNum);
-            setupShapesGL();
+            if (flagIntensity) {
+                particles->updateNum(newNum);
+                setupShapesGL();
+            }
+//            setupShapesGL();
             setupTerrainGL();
             // Setup camera data from the scene
             m_view = renderScene.sceneCamera.getViewMatrix();

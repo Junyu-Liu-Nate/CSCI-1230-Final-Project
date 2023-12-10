@@ -177,13 +177,13 @@ void MainWindow::initialize() {
 
     intensitySlider = new QSlider(Qt::Orientation::Horizontal); // Intensity slider
     intensitySlider->setTickInterval(1);
-    intensitySlider->setMinimum(50);
-    intensitySlider->setMaximum(200);
+    intensitySlider->setMinimum(500);
+    intensitySlider->setMaximum(2000);
     intensitySlider->setValue(50);
 
     intensityBox = new QSpinBox();
-    intensityBox->setMinimum(50);
-    intensityBox->setMaximum(200);
+    intensityBox->setMinimum(500);
+    intensityBox->setMaximum(2000);
     intensityBox->setSingleStep(1);
     intensityBox->setValue(50);
 
