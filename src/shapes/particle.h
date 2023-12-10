@@ -26,6 +26,20 @@ class ParticleSystem
 {
 public:
     ParticleSystem();
+    ParticleSystem(int num){
+        maxparticles=num;
+        init_ParticleSystem();
+    };
+    int getNum(){return maxparticles;}
+    void updateNum(int new_num){
+        if(new_num!=maxparticles){
+            maxparticles=new_num;
+            std::cout<<maxparticles<<std::endl;
+            init_ParticleSystem();
+            update_ParticleSystem(0.0);
+
+        }
+    }
     void update_ParticleSystem(float deltaT);
     std::vector<float> getPosData();
     int getParticleNum(){return maxparticles;}
@@ -53,7 +67,7 @@ private:
 
     std::vector<particle>particles;
     std::vector<float>PosData;
-    const int maxparticles=1000;
+    int maxparticles=1000;
 
     float deltaT=0.001;
     std::random_device rd;

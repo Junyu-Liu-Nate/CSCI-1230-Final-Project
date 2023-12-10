@@ -390,7 +390,7 @@ void Realtime::paintGeometry() {
     }
 
     // Pass shape info and draw shape
-    for (int i = 0; i < shapeStartIndices.size(); i++) {
+    for (int i = 1; i < shapeStartIndices.size(); i++) {
         // Pass in model matrix for shape i as a uniform into the shader program
         glUniformMatrix4fv(glGetUniformLocation(m_shader, "modelMatrix"), 1, GL_FALSE, &modelMatrixList[i][0][0]);
         glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrixList[i])));
@@ -710,11 +710,17 @@ void Realtime::sceneChanged() {
 }
 
 void Realtime::settingsChanged() {
-    if (settings.shapeParameter1 != shapeParameter1Saved || settings.shapeParameter2 != shapeParameter2Saved) {
+    int oldNum=particles->getParticleNum();
+    int newNum=int(1000*((1.0f*settings.intensity)/100.f));
+
+    bool flagIntensity=std::abs(oldNum-newNum)>100?true:false;
+
+    if (flagIntensity||settings.shapeParameter1 != shapeParameter1Saved || settings.shapeParameter2 != shapeParameter2Saved) {
         shapeDataList.clear();
         vboData.clear();
         shapeStartIndices.clear();
         shapeSizes.clear();
+
         m_view = glm::mat4(1.0f);
         m_proj = glm::mat4(1.0f);
 
@@ -725,10 +731,11 @@ void Realtime::settingsChanged() {
                                       settings.nearPlane,
                                       settings.farPlane,
                                       metaData);
-
+            particles->updateNum(newNum);
+//                std::make_shared<ParticleSystem>(newNum);
             setupShapesGL();
             setupTerrainGL();
-            setupParticle();
+
             // Setup camera data from the scene
             m_view = renderScene.sceneCamera.getViewMatrix();
             m_proj = renderScene.sceneCamera.getProjectMatrix();
