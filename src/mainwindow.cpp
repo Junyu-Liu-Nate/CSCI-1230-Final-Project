@@ -35,7 +35,7 @@ void MainWindow::initialize() {
     weather_label->setText("Weather and time");
     weather_label->setFont(font);
     QLabel *intensity_label = new QLabel(); // Intensity label
-    intensity_label->setText("Intensity:");
+    intensity_label->setText("Snow Intensity:");
     QLabel *time_label = new QLabel(); // Time label
     time_label->setText("Change time:");
 
@@ -48,7 +48,7 @@ void MainWindow::initialize() {
     QLabel *bumpiness_label = new QLabel(); // Bumpiness label
     bumpiness_label->setText("Bumpiness:");
     QLabel *speed_label = new QLabel(); // Speed label
-    speed_label->setText("Speed: ");
+    speed_label->setText("Snow Speed: ");
     QLabel *near_label = new QLabel(); // Near plane label
     near_label->setText("Near Plane:");
     QLabel *far_label = new QLabel(); // Far plane label
@@ -161,11 +161,11 @@ void MainWindow::initialize() {
     snow->setChecked(true);
 
     accumulate = new QCheckBox();
-    accumulate->setText(QStringLiteral("Accumulate"));
+    accumulate->setText(QStringLiteral("Snow Physical Accumulation"));
     accumulate->setChecked(false);
 
     increase = new QCheckBox();
-    increase->setText(QStringLiteral("Increase"));
+    increase->setText(QStringLiteral("Snow Increase Terrain"));
     increase->setChecked(false);
 
     sun = new QCheckBox();
