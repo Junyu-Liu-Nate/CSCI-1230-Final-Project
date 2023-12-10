@@ -27,6 +27,7 @@ private:
     void connectPerPixelFilter();
     void connectKernelBasedFilter();
     void connectUploadFile();
+    void connectUploadHeightMap();
     void connectSaveImage();
     void connectExtraCredit();
 
@@ -42,6 +43,7 @@ private:
     QCheckBox *filter1;
     QCheckBox *filter2;
     QPushButton *uploadFile;
+    QPushButton *uploadHeightMap;
     QPushButton *saveImage;
     QSlider *speedSlider;
     QSpinBox *speedBox;
@@ -71,6 +73,7 @@ private slots:
     void onPerPixelFilter();
     void onKernelBasedFilter();
     void onUploadFile();
+    void onUploadHeightMap();
     void onSaveImage();
     void onValChangeSpeed(int newValue);
     void onValChangeBumpiness(int newValue);

@@ -30,9 +30,6 @@ TerrainGenerator::TerrainGenerator()
         m_randVecLookup.push_back(glm::vec2(std::rand() * 2.0 / RAND_MAX - 1.0,
                                             std::rand() * 2.0 / RAND_MAX - 1.0));
     }
-
-    // Load heightmap image
-    heightmapImage.load("scenefiles/heightmap/hm2.png");
 }
 
 // Destructor
@@ -54,9 +51,15 @@ void addPointToVectorVec2(glm::vec2 point, std::vector<float>& vector) {
 }
 
 // Generates the geometry of the output triangle mesh
-std::vector<float> TerrainGenerator::generateTerrain(int bump) {
+std::vector<float> TerrainGenerator::generateTerrain(QString path, int bump) {
     std::vector<float> verts;
     verts.reserve(m_resolution * m_resolution * 6);
+
+    // Load heightmap image
+    bool loaded = heightmapImage.load(path);
+    if (!loaded) {
+        return verts;
+    }
 
     for(int x = 0; x < m_resolution; x++) {
         for(int y = 0; y < m_resolution; y++) {

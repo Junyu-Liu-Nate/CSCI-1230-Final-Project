@@ -5,6 +5,7 @@
 
 struct Settings {
     std::string sceneFilePath;
+    std::string heightMapPath;
     int speed = 1;
     int bumpiness = 1;
     int shapeParameter2 = 1;

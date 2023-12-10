@@ -67,6 +67,10 @@ void MainWindow::initialize() {
     // Create file uploader for scene file
     uploadFile = new QPushButton();
     uploadFile->setText(QStringLiteral("Upload Scene File"));
+
+    // Create height map uploader
+    uploadHeightMap = new QPushButton();
+    uploadHeightMap->setText(QStringLiteral("Upload Height Map"));
     
     saveImage = new QPushButton();
     saveImage->setText(QStringLiteral("Save image"));
@@ -220,6 +224,7 @@ void MainWindow::initialize() {
     ec4->setChecked(false);
 
     vLayout->addWidget(uploadFile);
+    vLayout->addWidget(uploadHeightMap);
     vLayout->addWidget(saveImage);
 
     //Weather
@@ -272,6 +277,7 @@ void MainWindow::connectUIElements() {
     connectPerPixelFilter();
     connectKernelBasedFilter();
     connectUploadFile();
+    connectUploadHeightMap();
     connectSaveImage();
     connectParam1();
     connectTime();
@@ -295,6 +301,10 @@ void MainWindow::connectKernelBasedFilter() {
 
 void MainWindow::connectUploadFile() {
     connect(uploadFile, &QPushButton::clicked, this, &MainWindow::onUploadFile);
+}
+
+void MainWindow::connectUploadHeightMap() {
+    connect(uploadHeightMap, &QPushButton::clicked, this, &MainWindow::onUploadHeightMap);
 }
 
 void MainWindow::connectSaveImage() {
@@ -387,6 +397,21 @@ void MainWindow::onUploadFile() {
     settings.sceneFilePath = configFilePath.toStdString();
 
     std::cout << "Loaded scenefile: \"" << configFilePath.toStdString() << "\"." << std::endl;
+
+    realtime->sceneChanged();
+}
+
+void MainWindow::onUploadHeightMap() {
+    // Get abs path of image
+    QString imageFileName = QFileDialog::getOpenFileName(this, tr("Open Image"), "/path/to/images", tr("Image Files (*.png)"));
+    if (imageFileName.isNull()) {
+        std::cout << "Failed to load null scenefile." << std::endl;
+        return;
+    }
+
+    settings.heightMapPath = imageFileName.toStdString();
+
+    std::cout << "Loaded height map: \"" << imageFileName.toStdString() << "\"." << std::endl;
 
     realtime->sceneChanged();
 }

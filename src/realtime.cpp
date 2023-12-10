@@ -899,7 +899,7 @@ void Realtime::setupTerrainData() {
 //    shapeParameter2 = int(std::max(3, shapeParameter2));
 
     TerrainGenerator testTerrain;
-    terrainData = testTerrain.generateTerrain(settings.bumpiness);
+    terrainData = testTerrain.generateTerrain(QString::fromStdString(settings.heightMapPath), settings.bumpiness);
     terrainModelMatrix = glm::mat4(1);
 
     terrainVboData = terrainData;

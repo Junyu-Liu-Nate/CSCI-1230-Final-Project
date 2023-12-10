@@ -12,7 +12,7 @@ public:
     TerrainGenerator();
     ~TerrainGenerator();
     int getResolution() { return m_resolution; };
-    std::vector<float> generateTerrain(int bumpiness);
+    std::vector<float> generateTerrain(QString path, int bumpiness);
 
     // Takes a normalized (x, y) position, in range [0,1)
     // Returns a height value, z, by sampling a noise function
