@@ -240,12 +240,9 @@ void Realtime::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // ====== Draw with terrain shader
-    // TODO: settings.sun doesn't change
-//    std::cout << settings.sun << std::endl;
-//    if (settings.sun) {
-//        updateSunlight(sunlightOriginalDirection);
-//    }
-    updateSunlight(sunlightOriginalDirection);
+    if (settings.sun) {
+        updateSunlight(sunlightOriginalDirection);
+    }
     paintTerrain();
 
     // ====== Draw with default shader
@@ -263,22 +260,6 @@ void Realtime::paintGL() {
 
 void Realtime::paintFrame(GLuint texture) {
     glUseProgram(m_frame_shader);
-
-//    // Define gradient colors and direction
-//    glm::vec2 gradientDirection = glm::vec2(0.0f, 1.0f); // Direction from top to bottom
-
-//    // Use class variable for light color to influence gradient colors
-//    glm::vec3 warmGradientColor = glm::vec3(0.25f, 0.1f, 0.05f); // Slightly warm color for the gradient start
-//    glm::vec3 coolGradientColor = glm::vec3(0.05f, 0.1f, 0.5f); // Cool color for the gradient end
-
-//    // Calculate the interpolated gradient colors based on the light color
-//    glm::vec3 gradientStartColor = glm::mix(warmGradientColor, sunlightColor, 0.3f); // Mix with a factor to avoid too much white
-//    glm::vec3 gradientEndColor = glm::mix(coolGradientColor, sunlightColor, 0.3f);   // Mix with a factor to avoid too much white
-
-//    // Set the gradient uniforms
-//    glUniform3f(glGetUniformLocation(m_frame_shader, "gradientStartColor"), gradientStartColor.r, gradientStartColor.g, gradientStartColor.b);
-//    glUniform3f(glGetUniformLocation(m_frame_shader, "gradientEndColor"), gradientEndColor.r, gradientEndColor.g, gradientEndColor.b);
-//    glUniform2f(glGetUniformLocation(m_frame_shader, "gradientDirection"), gradientDirection.x, gradientDirection.y);
 
     // Define gradient colors and direction
     glm::vec2 gradientDirection = glm::vec2(0.0f, 1.0f); // Direction from top to bottom
@@ -789,18 +770,23 @@ void Realtime::settingsChanged() {
         shapeParameter2Saved = settings.shapeParameter2;
     }
 
-    // TODO: need to link with time toogle (currently buggy)
-    settings.time = 6;
-    timeTracker = 0;
-    setSunlightDirectionAccordingToTime();
+    if (settings.sun != isSunMove) {
+        isSunMove = settings.sun;
+        timeTracker = 0;
+        sunlightOriginalDirection = glm::vec4(sunlightDirection, 0.0f);
+    }
+
+    if (settings.time != dayTimeSaved) {
+        dayTimeSaved = settings.time;
+        timeTracker = 0;
+        setSunlightDirectionAccordingToTime();
+    }
 
     update(); // asks for a PaintGL() call to occur
 }
 
 void Realtime::setSunlightDirectionAccordingToTime() {
     // Calculate the angle based on the time of day, with 0 degrees at 6AM and 180 degrees at 6PM
-    // TODO: settings.time doesn't change
-//    std::cout << settings.time << std::endl;
     float hoursSince6AM = static_cast<float>(settings.time) - 6;
     float angleDegrees = hoursSince6AM * 15.0f;
 
@@ -817,6 +803,7 @@ void Realtime::setSunlightDirectionAccordingToTime() {
     // Rotate around the Z-axis to simulate the sun's path
     glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), angleRadians, glm::vec3(0.0f, 0.0f, 1.0f));
     sunlightOriginalDirection = rotationMatrix * glm::vec4(-1.0f, 0.0f, 0.0f, 1.0f); // Original direction as vec4
+    sunlightDirection = sunlightOriginalDirection;
 }
 
 void Realtime::setupShapesGL() {

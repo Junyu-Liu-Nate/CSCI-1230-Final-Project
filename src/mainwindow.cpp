@@ -289,6 +289,7 @@ void MainWindow::connectUIElements() {
     connectSnow();
     connectAccumulate();
     connectIntensity();
+    connectSun();
 }
 
 void MainWindow::connectPerPixelFilter() {
@@ -353,7 +354,7 @@ void MainWindow::connectAccumulate() {
 }
 
 void MainWindow::connectSun() {
-    connect(accumulate, &QCheckBox::clicked, this, &MainWindow::onSun);
+    connect(sun, &QCheckBox::clicked, this, &MainWindow::onSun);
 }
 
 void MainWindow::connectIntensity() {

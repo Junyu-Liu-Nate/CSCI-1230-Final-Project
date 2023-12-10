@@ -125,6 +125,8 @@ private:
 
     // ======= Weather-related
     int timeTracker = 0;
+    int dayTimeSaved = settings.time;
+    bool isSunMove = settings.sun;
     int snowTimer = 0;
     int sunTimer = 0;
 
