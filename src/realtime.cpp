@@ -587,6 +587,12 @@ void Realtime::paintTerrain() {
     GLint textureUniform = glGetUniformLocation(m_terrain_shader, "textureCollisionMapping");
     glUniform1i(textureUniform, 2);  // Set the sampler uniform to use texture unit 2
 
+    if (settings.increase) {
+        glUniform1f(glGetUniformLocation(m_terrain_shader, "isIncrease"), 1.0f);
+    }
+    else {
+        glUniform1f(glGetUniformLocation(m_terrain_shader, "isIncrease"), 0.0f);
+    }
     glUniform1f(glGetUniformLocation(m_terrain_shader, "accumulateRate"), accumulateRate);
 
     // ====== Accumulation timers
@@ -630,12 +636,14 @@ void Realtime::updateTerrainCollisionMap() {
         float z = particle.position.z;
 
         float terrainHeight = terrainGenerator.getHeight(x, 1-z, settings.bumpiness);
-        if (x >=0 && x <= 1 && z >=0 && z <= 1) {
-            int row = z * 100;
-            int col = x * 100;
-            int accumulateIdx = row * 100 + col;
-            float accumulateHeight = matrixData[accumulateIdx] * accumulateRate;
-            terrainHeight += accumulateHeight;
+        if (settings.increase) {
+            if (x >=0 && x <= 1 && z >=0 && z <= 1) {
+                int row = z * 100;
+                int col = x * 100;
+                int accumulateIdx = row * 100 + col;
+                float accumulateHeight = matrixData[accumulateIdx] * accumulateRate;
+                terrainHeight += accumulateHeight;
+            }
         }
 
         if (y <= terrainHeight) {

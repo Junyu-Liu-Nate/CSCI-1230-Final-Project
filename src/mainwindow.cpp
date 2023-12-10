@@ -164,6 +164,10 @@ void MainWindow::initialize() {
     accumulate->setText(QStringLiteral("Accumulate"));
     accumulate->setChecked(false);
 
+    increase = new QCheckBox();
+    increase->setText(QStringLiteral("Increase"));
+    increase->setChecked(false);
+
     sun = new QCheckBox();
     sun->setText(QStringLiteral("Sun Moving"));
     sun->setChecked(true);
@@ -231,6 +235,7 @@ void MainWindow::initialize() {
     vLayout->addWidget(weather_label);
     vLayout->addWidget(snow);
     vLayout->addWidget(accumulate);
+    vLayout->addWidget(increase);
     vLayout->addWidget(intensity_label);
     vLayout->addWidget(intensityLayout);
     vLayout->addWidget(speed_label);
@@ -257,7 +262,7 @@ void MainWindow::initialize() {
     vLayout->addWidget(ec3);
 //    vLayout->addWidget(ec4);
 
-    settings.sun = sun->isChecked();
+//    settings.sun = sun->isChecked();
 
     connectUIElements();
 
@@ -290,6 +295,7 @@ void MainWindow::connectUIElements() {
 
     connectSnow();
     connectAccumulate();
+    connectIncrease();
     connectIntensity();
     connectSun();
 }
@@ -353,6 +359,10 @@ void MainWindow::connectSnow() {
 
 void MainWindow::connectAccumulate() {
     connect(accumulate, &QCheckBox::clicked, this, &MainWindow::onAccumulate);
+}
+
+void MainWindow::connectIncrease() {
+    connect(increase, &QCheckBox::clicked, this, &MainWindow::onIncrease);
 }
 
 void MainWindow::connectSun() {
@@ -491,6 +501,11 @@ void MainWindow::onSnow() {
 
 void MainWindow::onAccumulate() {
     settings.accumulate = !settings.accumulate;
+    realtime->settingsChanged();
+}
+
+void MainWindow::onIncrease() {
+    settings.increase = !settings.increase;
     realtime->settingsChanged();
 }
 

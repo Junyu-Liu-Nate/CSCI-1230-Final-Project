@@ -24,6 +24,7 @@ uniform mat4 projectMatrix;
 //uniform sampler2D textureCollisionMapping;
 uniform usampler2D textureCollisionMapping;
 
+uniform float isIncrease;
 uniform float accumulateRate;
 
 void main() {
@@ -39,7 +40,9 @@ void main() {
     uint value = texelFetch(textureCollisionMapping, texCoords, 0).r;
     if (value > 0u) {
         accumulateCount = value;
-        vertexWorldSpacePos.y += accumulateRate * value;
+        if (isIncrease > 0) {
+            vertexWorldSpacePos.y += accumulateRate * value;
+        }
     }
     else {
         accumulateCount = -1;

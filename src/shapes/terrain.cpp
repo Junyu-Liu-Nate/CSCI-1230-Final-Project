@@ -57,9 +57,9 @@ std::vector<float> TerrainGenerator::generateTerrain(QString path, int bump) {
 
     // Load heightmap image
     isLoaded = heightmapImage.load(path);
-    if (!isLoaded) {
-        return verts;
-    }
+//    if (!isLoaded) {
+//        return verts;
+//    }
 
     for(int x = 0; x < m_resolution; x++) {
         for(int y = 0; y < m_resolution; y++) {
@@ -193,7 +193,16 @@ float TerrainGenerator::getHeight(float x, float y, int bump) {
         return height / 1600.f + z; // divided by 800 instead of 255 so that the terrain appears smoother
     }
     else {
-        return 0.0f;
+        float z1 = computePerlin(x * 2, y * 2) / 2;
+        float z2 = computePerlin(x * 4, y * 4) / 4;
+        float z3 = computePerlin(x * 8, y * 8) / 8;
+        float z4 = computePerlin(x * 16, y * 16) / 16;
+        float z5 = computePerlin(x * 32, y * 32) / 32;
+
+//        return 0.0f;
+
+        float z = z1 + z2 + z3 + z4 + z5;
+        return z;
     }
 }
 

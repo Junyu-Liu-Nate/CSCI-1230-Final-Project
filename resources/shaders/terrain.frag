@@ -44,11 +44,10 @@ uniform int sunTimer;
 
 void main() {
     // Need to renormalize vectors here if you want them to be normalized
+    fragColor = vec4(0.0, 0.0, 0.0, 1.0);
 
     // ====== Snow color
     vec4 snowColor = vec4(0.0);
-//        float colorValue = 1 * snowTimer / 400.0; // Use timer
-//        colorValue = clamp(colorValue, 0.5, 2.0);
     float colorValue = accumulateCount * 0.2;
     colorValue = clamp(colorValue, 0.0, 0.8);
     if (vertexWorldSpacePos.y > 0.06) {
@@ -72,7 +71,6 @@ void main() {
 //        colorValue = clamp(colorValue, 0.0f, 1.0f);
 //        vec4 snowColor = vec4(colorValue, colorValue, colorValue, 1);
 
-    fragColor = vec4(0.0, 0.0, 0.0, 1.0);
     // ====== Add ambient component to output color
     fragColor.x += ka * cAmbient.x + colorValue;
     fragColor.y += ka * cAmbient.y + colorValue;
@@ -134,9 +132,9 @@ void main() {
         }
 
         // ====== Rain specular
-        float rainSpecularFactor = rainTimer / 200.0;
-        float shininessRain = shininess * rainSpecularFactor;
-        shininessRain = clamp(shininessRain, 1.0, 30.0);
+//        float rainSpecularFactor = rainTimer / 200.0;
+//        float shininessRain = shininess * rainSpecularFactor;
+//        shininessRain = clamp(shininessRain, 1.0, 30.0);
 
         // ====== Specular component
         vec3 reflect = normalize(-surfaceToLight) + 2 * NdotL * normalize(vertexWorldSpaceNormal);

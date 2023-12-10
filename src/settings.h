@@ -21,7 +21,8 @@ struct Settings {
     bool snow = true;
 //    bool rain = false;
     bool accumulate = false;
-    bool sun = false;
+    bool increase = false;
+    bool sun = true;
     int intensity = 50;
     int time = 6;
 };
