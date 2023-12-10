@@ -17,7 +17,8 @@ struct Settings {
     bool extraCredit4 = false;
 
     bool snow = true;
-    bool rain = false;
+//    bool rain = false;
+    bool accumulate = false;
     bool sun = false;
     int intensity = 50;
     int time = 6;

@@ -156,9 +156,9 @@ void MainWindow::initialize() {
     snow->setText(QStringLiteral("Snow"));
     snow->setChecked(true);
 
-    rain = new QCheckBox();
-    rain->setText(QStringLiteral("Rain"));
-    rain->setChecked(false);
+    accumulate = new QCheckBox();
+    accumulate->setText(QStringLiteral("Accumulate"));
+    accumulate->setChecked(false);
 
     sun = new QCheckBox();
     sun->setText(QStringLiteral("Sun"));
@@ -225,7 +225,7 @@ void MainWindow::initialize() {
     //Weather
     vLayout->addWidget(weather_label);
     vLayout->addWidget(snow);
-    vLayout->addWidget(rain);
+    vLayout->addWidget(accumulate);
     vLayout->addWidget(intensity_label);
     vLayout->addWidget(intensityLayout);
     vLayout->addWidget(sun);
@@ -283,7 +283,7 @@ void MainWindow::connectUIElements() {
     connectExtraCredit();
 
     connectSnow();
-    connectRain();
+    connectAccumulate();
     connectIntensity();
 }
 
@@ -340,12 +340,12 @@ void MainWindow::connectSnow() {
     connect(snow, &QCheckBox::clicked, this, &MainWindow::onSnow);
 }
 
-void MainWindow::connectRain() {
-    connect(rain, &QCheckBox::clicked, this, &MainWindow::onRain);
+void MainWindow::connectAccumulate() {
+    connect(accumulate, &QCheckBox::clicked, this, &MainWindow::onAccumulate);
 }
 
 void MainWindow::connectSun() {
-    connect(rain, &QCheckBox::clicked, this, &MainWindow::onSun);
+    connect(accumulate, &QCheckBox::clicked, this, &MainWindow::onSun);
 }
 
 void MainWindow::connectIntensity() {
@@ -463,8 +463,8 @@ void MainWindow::onSnow() {
     realtime->settingsChanged();
 }
 
-void MainWindow::onRain() {
-    settings.rain = !settings.rain;
+void MainWindow::onAccumulate() {
+    settings.accumulate = !settings.accumulate;
     realtime->settingsChanged();
 }
 

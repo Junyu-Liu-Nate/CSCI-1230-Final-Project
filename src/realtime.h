@@ -122,7 +122,7 @@ private:
     // ======= Weather-related
     int timeTracker = 0;
     int snowTimer = 0;
-    int rainTimer = 0;
+//    int rainTimer = 0;
     int sunTimer = 0;
 
     float rotationSpeedScale = 0.5;

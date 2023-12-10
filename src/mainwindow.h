@@ -31,7 +31,7 @@ private:
 
     //Weather
     void connectSnow();
-    void connectRain();
+    void connectAccumulate();
     void connectSun();
     void connectIntensity();
     void connectTime();
@@ -53,7 +53,7 @@ private:
 
     //Weather
     QCheckBox *snow;
-    QCheckBox *rain;
+    QCheckBox *accumulate;
     QCheckBox *sun;
     QSlider *intensitySlider;
     QSpinBox *intensityBox;
@@ -80,7 +80,7 @@ private slots:
 
     //Weather
     void onSnow();
-    void onRain();
+    void onAccumulate();
     void onSun();
     void onValChangeIntensity(int newValue);
     void onValChangeTime(int time);
