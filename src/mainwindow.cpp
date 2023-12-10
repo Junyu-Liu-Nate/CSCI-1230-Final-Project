@@ -74,8 +74,8 @@ void MainWindow::initialize() {
     // Creates the boxes containing the parameter sliders and number boxes
     QGroupBox *p1Layout = new QGroupBox(); // horizonal slider 1 alignment
     QHBoxLayout *l1 = new QHBoxLayout();
-    QGroupBox *p2Layout = new QGroupBox(); // horizonal slider 2 alignment
-    QHBoxLayout *l2 = new QHBoxLayout();
+//    QGroupBox *p2Layout = new QGroupBox(); // horizonal slider 2 alignment
+//    QHBoxLayout *l2 = new QHBoxLayout();
 
     // Create slider controls to control parameters
     p1Slider = new QSlider(Qt::Orientation::Horizontal); // Parameter 1 slider
@@ -90,26 +90,26 @@ void MainWindow::initialize() {
     p1Box->setSingleStep(1);
     p1Box->setValue(1);
 
-    p2Slider = new QSlider(Qt::Orientation::Horizontal); // Parameter 2 slider
-    p2Slider->setTickInterval(1);
-    p2Slider->setMinimum(1);
-    p2Slider->setMaximum(25);
-    p2Slider->setValue(1);
+//    p2Slider = new QSlider(Qt::Orientation::Horizontal); // Parameter 2 slider
+//    p2Slider->setTickInterval(1);
+//    p2Slider->setMinimum(1);
+//    p2Slider->setMaximum(25);
+//    p2Slider->setValue(1);
 
-    p2Box = new QSpinBox();
-    p2Box->setMinimum(1);
-    p2Box->setMaximum(25);
-    p2Box->setSingleStep(1);
-    p2Box->setValue(1);
+//    p2Box = new QSpinBox();
+//    p2Box->setMinimum(1);
+//    p2Box->setMaximum(25);
+//    p2Box->setSingleStep(1);
+//    p2Box->setValue(1);
 
     // Adds the slider and number box to the parameter layouts
     l1->addWidget(p1Slider);
     l1->addWidget(p1Box);
     p1Layout->setLayout(l1);
 
-    l2->addWidget(p2Slider);
-    l2->addWidget(p2Box);
-    p2Layout->setLayout(l2);
+//    l2->addWidget(p2Slider);
+//    l2->addWidget(p2Box);
+//    p2Layout->setLayout(l2);
 
     // Creates the boxes containing the camera sliders and number boxes
     QGroupBox *nearLayout = new QGroupBox(); // horizonal near slider alignment
@@ -235,8 +235,8 @@ void MainWindow::initialize() {
     vLayout->addWidget(tesselation_label);
     vLayout->addWidget(param1_label);
     vLayout->addWidget(p1Layout);
-    vLayout->addWidget(param2_label);
-    vLayout->addWidget(p2Layout);
+//    vLayout->addWidget(param2_label);
+//    vLayout->addWidget(p2Layout);
     vLayout->addWidget(camera_label);
     vLayout->addWidget(near_label);
     vLayout->addWidget(nearLayout);
@@ -256,7 +256,7 @@ void MainWindow::initialize() {
 
     // Set default values of 5 for tesselation parameters
     onValChangeP1(5);
-    onValChangeP2(5);
+//    onValChangeP2(5);
 
     onValChangeIntensity(50);
 
@@ -277,7 +277,7 @@ void MainWindow::connectUIElements() {
     connectUploadFile();
     connectSaveImage();
     connectParam1();
-    connectParam2();
+//    connectParam2();
     connectNear();
     connectFar();
     connectExtraCredit();
@@ -309,11 +309,11 @@ void MainWindow::connectParam1() {
             this, &MainWindow::onValChangeP1);
 }
 
-void MainWindow::connectParam2() {
-    connect(p2Slider, &QSlider::valueChanged, this, &MainWindow::onValChangeP2);
-    connect(p2Box, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-            this, &MainWindow::onValChangeP2);
-}
+//void MainWindow::connectParam2() {
+//    connect(p2Slider, &QSlider::valueChanged, this, &MainWindow::onValChangeP2);
+//    connect(p2Box, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+//            this, &MainWindow::onValChangeP2);
+//}
 
 void MainWindow::connectNear() {
     connect(nearSlider, &QSlider::valueChanged, this, &MainWindow::onValChangeNearSlider);
@@ -421,12 +421,12 @@ void MainWindow::onValChangeP1(int newValue) {
     realtime->settingsChanged();
 }
 
-void MainWindow::onValChangeP2(int newValue) {
-    p2Slider->setValue(newValue);
-    p2Box->setValue(newValue);
-    settings.shapeParameter2 = p2Slider->value();
-    realtime->settingsChanged();
-}
+//void MainWindow::onValChangeP2(int newValue) {
+//    p2Slider->setValue(newValue);
+//    p2Box->setValue(newValue);
+//    settings.shapeParameter2 = p2Slider->value();
+//    realtime->settingsChanged();
+//}
 
 void MainWindow::onValChangeNearSlider(int newValue) {
     //nearSlider->setValue(newValue);
