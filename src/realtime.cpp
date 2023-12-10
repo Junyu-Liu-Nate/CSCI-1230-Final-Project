@@ -240,6 +240,11 @@ void Realtime::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // ====== Draw with terrain shader
+    // TODO: settings.sun doesn't change
+//    std::cout << settings.sun << std::endl;
+//    if (settings.sun) {
+//        updateSunlight(sunlightOriginalDirection);
+//    }
     updateSunlight(sunlightOriginalDirection);
     paintTerrain();
 
@@ -491,14 +496,10 @@ void Realtime::paintTerrain() {
             GLint loc1 = glGetUniformLocation(m_terrain_shader, ("lightTypes[" + std::to_string(lightCounter) + "]").c_str());
             glUniform1f(loc1, 0);
 
-//            updateSunlight(sunlightOriginalDirection);
-
             GLint loc2 = glGetUniformLocation(m_terrain_shader, ("lightColors[" + std::to_string(lightCounter) + "]").c_str());
-//            glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
             glUniform3f(loc2, sunlightColor.x, sunlightColor.y, sunlightColor.z);
 
             GLint loc3 = glGetUniformLocation(m_terrain_shader, ("lightDirections[" + std::to_string(lightCounter) + "]").c_str());
-//            glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
             glUniform3f(loc3, sunlightDirection.x, sunlightDirection.y, sunlightDirection.z); // rotate the sun light
         }
         if (light.type == LightType::LIGHT_POINT) {
@@ -660,12 +661,14 @@ void Realtime::updateTerrainCollisionMap() {
             if (x >=0 && x <= 1 && z >=0 && z <= 1) {
                 // Add shape info to static list
                 // TODO: Need to update ParticleModelMatrix by moving the particle upwards by accumulateRate
-//                QString temp_imagePath = "/scenefiles/textures/snowflake.png";
-//                Square squareShape;
-//                squareShape.updateParams(true, 1, 1, temp_imagePath);
-//                staticShapeDataList.push_back(squareShape.generateShape());
-//                staticMatrixList.push_back(particles->getParticleModelMatrix(&particle));
-//                staticParticleNum ++;
+                if (settings.accumulate) {
+                    QString temp_imagePath = "/scenefiles/textures/snowflake.png";
+                    Square squareShape;
+                    squareShape.updateParams(true, 1, 1, temp_imagePath);
+                    staticShapeDataList.push_back(squareShape.generateShape());
+                    staticMatrixList.push_back(particles->getParticleModelMatrix(&particle));
+                    staticParticleNum ++;
+                }
 
                 // Kill this particle
                 particle.grounded = true;
@@ -796,6 +799,8 @@ void Realtime::settingsChanged() {
 
 void Realtime::setSunlightDirectionAccordingToTime() {
     // Calculate the angle based on the time of day, with 0 degrees at 6AM and 180 degrees at 6PM
+    // TODO: settings.time doesn't change
+//    std::cout << settings.time << std::endl;
     float hoursSince6AM = static_cast<float>(settings.time) - 6;
     float angleDegrees = hoursSince6AM * 15.0f;
 
@@ -983,7 +988,6 @@ void Realtime::setupTerrainData() {
     terrainModelMatrix = glm::mat4(1);
 
     terrainVboData = terrainData;
-//    std::cout << terrainData.at(1) << std::endl;
     terrainStartIndex = 0;
     terrainSize = terrainData.size() / 8;
 

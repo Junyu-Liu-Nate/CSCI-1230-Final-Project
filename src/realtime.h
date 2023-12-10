@@ -131,7 +131,7 @@ private:
     float rotationSpeedScale = 0.25;
     glm::vec3 sunlightColor = {0.0f,0.0f,0.0f};
     glm::vec4 sunlightOriginalDirection = {-1,0,0,0};
-    glm::vec3 sunlightDirection = {0.0f,0.0f,0.0f};
+    glm::vec3 sunlightDirection = {-1,0.0f,0.0f};
 
     void setSunlightDirectionAccordingToTime();
     void updateSunlight(glm::vec4 originalDirection);

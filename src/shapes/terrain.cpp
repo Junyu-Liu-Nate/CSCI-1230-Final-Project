@@ -183,28 +183,18 @@ float TerrainGenerator::getHeight(float x, float y, int bump) {
 
         float height = qGray(heightmapImage.pixel(i, j));
         float z = 0;
-        int factor = 2;
+        int factor = 8;
 
         for (int n = 0; n < bump; n++) {
             z += computePerlin(x * factor, y * factor) / factor;
             factor *= 2;
         }
 
-        return height / 800.f + z; // divided by 800 instead of 255 so that the terrain appears smoother
+        return height / 1600.f + z; // divided by 800 instead of 255 so that the terrain appears smoother
     }
     else {
         return 0.0f;
     }
-
-//    // Task 7: combine multiple different octaves of noise to produce fractal perlin noise
-//    float z1 = computePerlin(x * 2, y * 2) / 2;
-//    float z2 = computePerlin(x * 4, y * 4) / 4;
-//    float z3 = computePerlin(x * 8, y * 8) / 8;
-//    float z4 = computePerlin(x * 16, y * 16) / 16;
-//    float z5 = computePerlin(x * 32, y * 32) / 32;
-
-//    float z = z1 + z2 + z3 + z4 + z5; // divided by 800 instead of 255 so that the terrain appears smoother
-//    return z;
 }
 
 // Computes the normal of a vertex by averaging neighbors
