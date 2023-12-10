@@ -30,9 +30,6 @@ TerrainGenerator::TerrainGenerator()
         m_randVecLookup.push_back(glm::vec2(std::rand() * 2.0 / RAND_MAX - 1.0,
                                             std::rand() * 2.0 / RAND_MAX - 1.0));
     }
-
-    // Load heightmap image
-    heightmapImage.load("scenefiles/heightmap/hm2.png");
 }
 
 // Destructor
@@ -54,9 +51,15 @@ void addPointToVectorVec2(glm::vec2 point, std::vector<float>& vector) {
 }
 
 // Generates the geometry of the output triangle mesh
-std::vector<float> TerrainGenerator::generateTerrain() {
+std::vector<float> TerrainGenerator::generateTerrain(QString path, int bump) {
     std::vector<float> verts;
     verts.reserve(m_resolution * m_resolution * 6);
+
+    // Load heightmap image
+    isLoaded = heightmapImage.load(path);
+    if (!isLoaded) {
+        return verts;
+    }
 
     for(int x = 0; x < m_resolution; x++) {
         for(int y = 0; y < m_resolution; y++) {
@@ -80,16 +83,16 @@ std::vector<float> TerrainGenerator::generateTerrain() {
             glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1, 0, 0));
 
             // Apply this rotation to vertices
-            glm::vec3 p1 = glm::vec3(rotationMatrix * glm::vec4(getPosition(x1, y1), 1.0));
-            glm::vec3 p2 = glm::vec3(rotationMatrix * glm::vec4(getPosition(x2, y1), 1.0));
-            glm::vec3 p3 = glm::vec3(rotationMatrix * glm::vec4(getPosition(x2, y2), 1.0));
-            glm::vec3 p4 = glm::vec3(rotationMatrix * glm::vec4(getPosition(x1, y2), 1.0));
+            glm::vec3 p1 = glm::vec3(rotationMatrix * glm::vec4(getPosition(x1, y1, bump), 1.0));
+            glm::vec3 p2 = glm::vec3(rotationMatrix * glm::vec4(getPosition(x2, y1, bump), 1.0));
+            glm::vec3 p3 = glm::vec3(rotationMatrix * glm::vec4(getPosition(x2, y2, bump), 1.0));
+            glm::vec3 p4 = glm::vec3(rotationMatrix * glm::vec4(getPosition(x1, y2, bump), 1.0));
 
             // Apply this rotation to normals
-            glm::vec3 n1 = glm::vec3(rotationMatrix * glm::vec4(getNormal(x1, y1), 0.0));
-            glm::vec3 n2 = glm::vec3(rotationMatrix * glm::vec4(getNormal(x2, y1), 0.0));
-            glm::vec3 n3 = glm::vec3(rotationMatrix * glm::vec4(getNormal(x2, y2), 0.0));
-            glm::vec3 n4 = glm::vec3(rotationMatrix * glm::vec4(getNormal(x1, y2), 0.0));
+            glm::vec3 n1 = glm::vec3(rotationMatrix * glm::vec4(getNormal(x1, y1, bump), 0.0));
+            glm::vec3 n2 = glm::vec3(rotationMatrix * glm::vec4(getNormal(x2, y1, bump), 0.0));
+            glm::vec3 n3 = glm::vec3(rotationMatrix * glm::vec4(getNormal(x2, y2, bump), 0.0));
+            glm::vec3 n4 = glm::vec3(rotationMatrix * glm::vec4(getNormal(x1, y2, bump), 0.0));
 
 //            p1.x -= 0.5;
             p1.z += 1.0;
@@ -106,15 +109,15 @@ std::vector<float> TerrainGenerator::generateTerrain() {
             // x2y2z3
             addPointToVector(p1, verts);
             addPointToVector(n1, verts);
-            addPointToVectorVec2(glm::vec2(p1.x,p1.z), verts); // Not using get color anymore, this is texture uv
+            addPointToVectorVec2(glm::vec2(p1.x,-p1.z), verts); // Not using get color anymore, this is texture uv
 
             addPointToVector(p2, verts);
             addPointToVector(n2, verts);
-            addPointToVectorVec2(glm::vec2(p2.x,p2.z), verts);
+            addPointToVectorVec2(glm::vec2(p2.x,-p2.z), verts);
 
             addPointToVector(p3, verts);
             addPointToVector(n3, verts);
-            addPointToVectorVec2(glm::vec2(p3.x,p3.z), verts);
+            addPointToVectorVec2(glm::vec2(p3.x,-p3.z), verts);
 
             // tris 2
             // x1y1z1
@@ -122,15 +125,15 @@ std::vector<float> TerrainGenerator::generateTerrain() {
             // x1y2z4
             addPointToVector(p1, verts);
             addPointToVector(n1, verts);
-            addPointToVectorVec2(glm::vec2(p1.x,p1.z), verts);
+            addPointToVectorVec2(glm::vec2(p1.x,-p1.z), verts);
 
             addPointToVector(p3, verts);
             addPointToVector(n3, verts);
-            addPointToVectorVec2(glm::vec2(p3.x,p3.z), verts);
+            addPointToVectorVec2(glm::vec2(p3.x,-p3.z), verts);
 
             addPointToVector(p4, verts);
             addPointToVector(n4, verts);
-            addPointToVectorVec2(glm::vec2(p4.x,p4.z), verts);
+            addPointToVectorVec2(glm::vec2(p4.x,-p4.z), verts);
         }
     }
     return verts;
@@ -146,12 +149,12 @@ glm::vec2 TerrainGenerator::sampleRandomVector(int row, int col)
 
 // Takes a grid coordinate (row, col), [0, m_resolution), which describes a vertex in a plane mesh
 // Returns a normalized position (x, y, z); x and y in range from [0, 1), and z is obtained from getHeight()
-glm::vec3 TerrainGenerator::getPosition(int row, int col) {
+glm::vec3 TerrainGenerator::getPosition(int row, int col, int bump) {
     // Normalizing the planar coordinates to a unit square
     // makes scaling independent of sampling resolution.
     float x = 1.0 * row / m_resolution;
     float y = 1.0 * col / m_resolution;
-    float z = getHeight(x, y);
+    float z = getHeight(x, y, bump);
     return glm::vec3(x,y,z);
 }
 
@@ -169,42 +172,45 @@ float interpolate(float A, float B, float alpha) {
 
 // Takes a normalized (x, y) position, in range [0,1)
 // Returns a height value by sampling a heightmap
-float TerrainGenerator::getHeight(float x, float y) {
-    if (x < 0 || y < 0 || x >= 1 || y >= 1) {
-        return 0.f;
+float TerrainGenerator::getHeight(float x, float y, int bump) {
+    if (isLoaded) {
+        if (x < 0 || y < 0 || x >= 1 || y >= 1) {
+            return 0.f;
+        }
+
+        int i = heightmapImage.size().width() * x;
+        int j = heightmapImage.size().height() * y;
+
+        float height = qGray(heightmapImage.pixel(i, j));
+        float z = 0;
+        int factor = 8;
+
+        for (int n = 0; n < bump; n++) {
+            z += computePerlin(x * factor, y * factor) / factor;
+            factor *= 2;
+        }
+
+        return height / 1600.f + z; // divided by 800 instead of 255 so that the terrain appears smoother
     }
-
-    int i = heightmapImage.size().width() * x;
-    int j = heightmapImage.size().height() * y;
-
-
-    // Task 7: combine multiple different octaves of noise to produce fractal perlin noise
-    float z1 = computePerlin(x * 2, y * 2) / 2;
-    float z2 = computePerlin(x * 4, y * 4) / 4;
-    float z3 = computePerlin(x * 8, y * 8) / 8;
-    float z4 = computePerlin(x * 16, y * 16) / 16;
-    float z5 = computePerlin(x * 32, y * 32) / 32;
-
-    float height = qGray(heightmapImage.pixel(i, j));
-
-    float z = height / 800.f + z1 + z2 + z3 + z4 + z5; // divided by 800 instead of 255 so that the terrain appears smoother
-    return z;
+    else {
+        return 0.0f;
+    }
 }
 
 // Computes the normal of a vertex by averaging neighbors
-glm::vec3 TerrainGenerator::getNormal(int row, int col) {
+glm::vec3 TerrainGenerator::getNormal(int row, int col, int bump) {
     // Task 9: Compute the average normal for the given input indices
     std::vector<glm::vec3> nieghborVertices;
-    nieghborVertices.push_back(getPosition(row - 1, col - 1));
-    nieghborVertices.push_back(getPosition(row, col - 1));
-    nieghborVertices.push_back(getPosition(row + 1, col - 1));
-    nieghborVertices.push_back(getPosition(row + 1, col));
-    nieghborVertices.push_back(getPosition(row + 1, col + 1));
-    nieghborVertices.push_back(getPosition(row, col + 1));
-    nieghborVertices.push_back(getPosition(row - 1, col + 1));
-    nieghborVertices.push_back(getPosition(row - 1, col));
+    nieghborVertices.push_back(getPosition(row - 1, col - 1, bump));
+    nieghborVertices.push_back(getPosition(row, col - 1, bump));
+    nieghborVertices.push_back(getPosition(row + 1, col - 1, bump));
+    nieghborVertices.push_back(getPosition(row + 1, col, bump));
+    nieghborVertices.push_back(getPosition(row + 1, col + 1, bump));
+    nieghborVertices.push_back(getPosition(row, col + 1, bump));
+    nieghborVertices.push_back(getPosition(row - 1, col + 1, bump));
+    nieghborVertices.push_back(getPosition(row - 1, col, bump));
 
-    glm::vec3 vPosition = getPosition(row, col);
+    glm::vec3 vPosition = getPosition(row, col, bump);
 
     std::vector<glm::vec3> normals;
     for (int i = 0; i < 8; i++) {

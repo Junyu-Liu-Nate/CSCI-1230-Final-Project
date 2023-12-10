@@ -19,19 +19,21 @@ public:
 
 private:
     void connectUIElements();
+    void connectSpeed();
     void connectParam1();
-    void connectParam2();
+//    void connectParam2();
     void connectNear();
     void connectFar();
     void connectPerPixelFilter();
     void connectKernelBasedFilter();
     void connectUploadFile();
+    void connectUploadHeightMap();
     void connectSaveImage();
     void connectExtraCredit();
 
     //Weather
     void connectSnow();
-    void connectRain();
+    void connectAccumulate();
     void connectSun();
     void connectIntensity();
     void connectTime();
@@ -41,11 +43,12 @@ private:
     QCheckBox *filter1;
     QCheckBox *filter2;
     QPushButton *uploadFile;
+    QPushButton *uploadHeightMap;
     QPushButton *saveImage;
-    QSlider *p1Slider;
-    QSlider *p2Slider;
-    QSpinBox *p1Box;
-    QSpinBox *p2Box;
+    QSlider *speedSlider;
+    QSpinBox *speedBox;
+    QSlider *bumpinessSlider;
+    QSpinBox *bumpinessBox;
     QSlider *nearSlider;
     QSlider *farSlider;
     QDoubleSpinBox *nearBox;
@@ -53,7 +56,7 @@ private:
 
     //Weather
     QCheckBox *snow;
-    QCheckBox *rain;
+    QCheckBox *accumulate;
     QCheckBox *sun;
     QSlider *intensitySlider;
     QSpinBox *intensityBox;
@@ -70,9 +73,10 @@ private slots:
     void onPerPixelFilter();
     void onKernelBasedFilter();
     void onUploadFile();
+    void onUploadHeightMap();
     void onSaveImage();
-    void onValChangeP1(int newValue);
-    void onValChangeP2(int newValue);
+    void onValChangeSpeed(int newValue);
+    void onValChangeBumpiness(int newValue);
     void onValChangeNearSlider(int newValue);
     void onValChangeFarSlider(int newValue);
     void onValChangeNearBox(double newValue);
@@ -80,10 +84,10 @@ private slots:
 
     //Weather
     void onSnow();
-    void onRain();
+    void onAccumulate();
     void onSun();
     void onValChangeIntensity(int newValue);
-    void onValChangeTime(int time);
+    void onValChangeTime(int newValue);
 
     // Extra Credit:
     void onExtraCredit1();

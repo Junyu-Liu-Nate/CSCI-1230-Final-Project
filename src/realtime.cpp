@@ -135,7 +135,7 @@ void Realtime::initializeGL() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     currentDir = QDir::currentPath();
-    texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/mountain_1.png");
+    texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/mountain_3.png");
     m_terrain_image = QImage(texture_filepath);
     if (m_terrain_image.isNull()) {
         // Handle error: Image didn't load
@@ -229,7 +229,6 @@ void Realtime::paintGL() {
     // Update timers
     timeTracker += 1;
     if (settings.snow) {snowTimer += 1;}
-    if (settings.rain) {rainTimer += 1;}
     if (settings.sun) {sunTimer += 1;}
 
     // Bind FBO
@@ -240,16 +239,17 @@ void Realtime::paintGL() {
     // Clear screen color and depth before painting
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    //    paintParticle();
+    // ====== Draw with terrain shader
+    // TODO: settings.sun doesn't change
+//    std::cout << settings.sun << std::endl;
+//    if (settings.sun) {
+//        updateSunlight(sunlightOriginalDirection);
+//    }
+    updateSunlight(sunlightOriginalDirection);
+    paintTerrain();
 
     // ====== Draw with default shader
     paintGeometry();
-
-    // ====== Draw with terrain shader
-
-    paintTerrain();
-
-    // ====== Draw particle system
 
     // ====== Draw with frame shader
     // Bind the default framebuffer
@@ -265,17 +265,49 @@ void Realtime::paintFrame(GLuint texture) {
     glUseProgram(m_frame_shader);
 
 //    // Define gradient colors and direction
-//    glm::vec3 gradientStartColor = glm::vec3(0.25f, 0.25f, 0.5f); // start color
-//    glm::vec3 gradientEndColor = glm::vec3(0.5f, 0.25f, 0.25f);   // end color
+//    glm::vec2 gradientDirection = glm::vec2(0.0f, 1.0f); // Direction from top to bottom
+
+//    // Use class variable for light color to influence gradient colors
+//    glm::vec3 warmGradientColor = glm::vec3(0.25f, 0.1f, 0.05f); // Slightly warm color for the gradient start
+//    glm::vec3 coolGradientColor = glm::vec3(0.05f, 0.1f, 0.5f); // Cool color for the gradient end
+
+//    // Calculate the interpolated gradient colors based on the light color
+//    glm::vec3 gradientStartColor = glm::mix(warmGradientColor, sunlightColor, 0.3f); // Mix with a factor to avoid too much white
+//    glm::vec3 gradientEndColor = glm::mix(coolGradientColor, sunlightColor, 0.3f);   // Mix with a factor to avoid too much white
+
+//    // Set the gradient uniforms
+//    glUniform3f(glGetUniformLocation(m_frame_shader, "gradientStartColor"), gradientStartColor.r, gradientStartColor.g, gradientStartColor.b);
+//    glUniform3f(glGetUniformLocation(m_frame_shader, "gradientEndColor"), gradientEndColor.r, gradientEndColor.g, gradientEndColor.b);
+//    glUniform2f(glGetUniformLocation(m_frame_shader, "gradientDirection"), gradientDirection.x, gradientDirection.y);
+
+    // Define gradient colors and direction
     glm::vec2 gradientDirection = glm::vec2(0.0f, 1.0f); // Direction from top to bottom
 
-    // Use class variable for light color to influence gradient colors
-    glm::vec3 warmGradientColor = glm::vec3(0.25f, 0.1f, 0.05f); // Slightly warm color for the gradient start
-    glm::vec3 coolGradientColor = glm::vec3(0.05f, 0.1f, 0.5f); // Cool color for the gradient end
+    // Normalize the light direction
+    glm::vec3 normalizedLightDirection = glm::normalize(sunlightDirection);
+    // Dot product with the y-axis
+    float dotProduct = glm::dot(normalizedLightDirection, glm::vec3(0.0f, 1.0f, 0.0f));
+    // Use the absolute value of the dot product to ensure we don't get negative values
+    float blendFactor = glm::abs(dotProduct);
 
-    // Calculate the interpolated gradient colors based on the light color
-    glm::vec3 gradientStartColor = glm::mix(warmGradientColor, sunlightColor, 0.3f); // Mix with a factor to avoid too much white
-    glm::vec3 gradientEndColor = glm::mix(coolGradientColor, sunlightColor, 0.3f);   // Mix with a factor to avoid too much white
+    // Use blendFactor from updateSunlight for the gradient transition
+    float nightTransitionFactor = 1.0f - blendFactor * 0.6; // Invert to darken during night
+
+    // Define base gradient colors
+    glm::vec3 baseWarmGradientColor = glm::vec3(0.25f, 0.1f, 0.05f); // Slightly warm color for the gradient start
+    glm::vec3 baseCoolGradientColor = glm::vec3(0.05f, 0.1f, 0.5f); // Cool color for the gradient end
+
+    // Adjust the gradient colors based on the nightTransitionFactor
+    glm::vec3 gradientStartColor;
+    glm::vec3 gradientEndColor;
+    if (normalizedLightDirection.y <= 0) {
+        gradientStartColor = glm::mix(baseWarmGradientColor, sunlightColor, 0.3f);
+        gradientEndColor = glm::mix(baseCoolGradientColor, sunlightColor, 0.3f);
+    }
+    else {
+        gradientStartColor = glm::mix(baseWarmGradientColor, sunlightColor, 0.3f) * nightTransitionFactor;
+        gradientEndColor = glm::mix(baseCoolGradientColor, sunlightColor, 0.3f) * nightTransitionFactor;
+    }
 
     // Set the gradient uniforms
     glUniform3f(glGetUniformLocation(m_frame_shader, "gradientStartColor"), gradientStartColor.r, gradientStartColor.g, gradientStartColor.b);
@@ -315,7 +347,6 @@ void Realtime::paintGeometry() {
     glUseProgram(m_shader);
 
     glUniform1i(glGetUniformLocation(m_shader, "snowTimer"), snowTimer);
-    glUniform1i(glGetUniformLocation(m_shader, "rainTimer"), rainTimer);
     glUniform1i(glGetUniformLocation(m_shader, "sunTimer"), sunTimer);
 
     // Pass m_ka, m_kd, m_ks into the fragment shader as a uniform
@@ -465,14 +496,10 @@ void Realtime::paintTerrain() {
             GLint loc1 = glGetUniformLocation(m_terrain_shader, ("lightTypes[" + std::to_string(lightCounter) + "]").c_str());
             glUniform1f(loc1, 0);
 
-            updateSunlight(light.dir);
-
             GLint loc2 = glGetUniformLocation(m_terrain_shader, ("lightColors[" + std::to_string(lightCounter) + "]").c_str());
-//            glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
             glUniform3f(loc2, sunlightColor.x, sunlightColor.y, sunlightColor.z);
 
             GLint loc3 = glGetUniformLocation(m_terrain_shader, ("lightDirections[" + std::to_string(lightCounter) + "]").c_str());
-//            glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
             glUniform3f(loc3, sunlightDirection.x, sunlightDirection.y, sunlightDirection.z); // rotate the sun light
         }
         if (light.type == LightType::LIGHT_POINT) {
@@ -571,10 +598,7 @@ void Realtime::paintTerrain() {
     // ====== Pass collision map as a texture
     // Bind texture
     glBindTexture(GL_TEXTURE_2D, m_collision_texture);
-//    for (int i = 0; i < 100; ++i) { // Update 100 random positions per frame
-//        int randomIndex = rand() % (100 * 100);
-//        matrixData[randomIndex]++;
-//    }
+    // Update collision map
     updateTerrainCollisionMap();
     // Upload the data to the texture
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R32UI, 100, 100, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, matrixData.data());
@@ -582,9 +606,10 @@ void Realtime::paintTerrain() {
     GLint textureUniform = glGetUniformLocation(m_terrain_shader, "textureCollisionMapping");
     glUniform1i(textureUniform, 2);  // Set the sampler uniform to use texture unit 2
 
+    glUniform1f(glGetUniformLocation(m_terrain_shader, "accumulateRate"), accumulateRate);
+
     // ====== Accumulation timers
     glUniform1i(glGetUniformLocation(m_terrain_shader, "snowTimer"), snowTimer);
-    glUniform1i(glGetUniformLocation(m_terrain_shader, "rainTimer"), rainTimer);
     glUniform1i(glGetUniformLocation(m_terrain_shader, "sunTimer"), sunTimer);
 
     // Draw Command
@@ -623,17 +648,42 @@ void Realtime::updateTerrainCollisionMap() {
         float y = particle.position.y;
         float z = particle.position.z;
 
-        float terrainHeight = terrainGenerator.getHeight(x, z);
+        float terrainHeight = terrainGenerator.getHeight(x, 1-z, settings.bumpiness);
+        if (x >=0 && x <= 1 && z >=0 && z <= 1) {
+            int row = z * 100;
+            int col = x * 100;
+            int accumulateIdx = row * 100 + col;
+            float accumulateHeight = matrixData[accumulateIdx] * accumulateRate;
+            terrainHeight += accumulateHeight;
+        }
 
         if (y <= terrainHeight) {
-            // TODO: Should kill this particle
+            if (x >=0 && x <= 1 && z >=0 && z <= 1) {
+                // Add shape info to static list
+                // TODO: Need to update ParticleModelMatrix by moving the particle upwards by accumulateRate
+                if (settings.accumulate) {
+                    QString temp_imagePath = "/scenefiles/textures/snowflake.png";
+                    Square squareShape;
+                    squareShape.updateParams(true, 1, 1, temp_imagePath);
+                    staticShapeDataList.push_back(squareShape.generateShape());
+                    staticMatrixList.push_back(particles->getParticleModelMatrix(&particle));
+                    staticParticleNum ++;
+                }
+
+                // Kill this particle
+                particle.grounded = true;
+
+                // TODO: May need to replace 100 with actual resolution
+                int row = z * 100;
+                int col = x * 100;
+                int accumulateIdx = row * 100 + col;
+                matrixData[accumulateIdx]++;
+            }
+        }
+
+        if (y < -1) {
+            // Kill this particle
             particle.grounded = true;
-            // TODO: Should replace 100 with actual resolution
-            int row = x * 100;
-            int col = z * 100;
-            int accumulateIdx = row * 100 + col;
-            matrixData[accumulateIdx]++;
-//            std::cout << row << ", " << col << ": " << matrixData[accumulateIdx] << std::endl;
         }
     }
 }
@@ -710,12 +760,11 @@ void Realtime::sceneChanged() {
 }
 
 void Realtime::settingsChanged() {
-    int oldNum=particles->getParticleNum();
+  
+     int oldNum=particles->getParticleNum();
     int newNum=int(1000*((1.0f*settings.intensity)/100.f));
-
     bool flagIntensity=std::abs(oldNum-newNum)>100?true:false;
-
-    if (flagIntensity||settings.shapeParameter1 != shapeParameter1Saved || settings.shapeParameter2 != shapeParameter2Saved) {
+    if (flagIntensity||settings.bumpiness != shapeParameter1Saved || settings.shapeParameter2 != shapeParameter2Saved) {
         shapeDataList.clear();
         vboData.clear();
         shapeStartIndices.clear();
@@ -735,17 +784,43 @@ void Realtime::settingsChanged() {
 //                std::make_shared<ParticleSystem>(newNum);
             setupShapesGL();
             setupTerrainGL();
-
             // Setup camera data from the scene
             m_view = renderScene.sceneCamera.getViewMatrix();
             m_proj = renderScene.sceneCamera.getProjectMatrix();
         }
 
-        shapeParameter1Saved = settings.shapeParameter1;
+        shapeParameter1Saved = settings.bumpiness;
         shapeParameter2Saved = settings.shapeParameter2;
     }
 
+    // TODO: need to link with time toogle (currently buggy)
+    settings.time = 6;
+    timeTracker = 0;
+    setSunlightDirectionAccordingToTime();
+
     update(); // asks for a PaintGL() call to occur
+}
+
+void Realtime::setSunlightDirectionAccordingToTime() {
+    // Calculate the angle based on the time of day, with 0 degrees at 6AM and 180 degrees at 6PM
+    // TODO: settings.time doesn't change
+//    std::cout << settings.time << std::endl;
+    float hoursSince6AM = static_cast<float>(settings.time) - 6;
+    float angleDegrees = hoursSince6AM * 15.0f;
+
+    // Adjust the angle for a full 24-hour cycle
+    if (angleDegrees < 0) {
+        angleDegrees += 360.0f; // Normalize the angle for times between 12AM and 6AM
+    } else if (angleDegrees >= 360.0f) {
+        angleDegrees -= 360.0f; // Normalize the angle for times between 6PM and 12AM
+    }
+
+    // Convert to radians
+    float angleRadians = glm::radians(angleDegrees);
+
+    // Rotate around the Z-axis to simulate the sun's path
+    glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), angleRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+    sunlightOriginalDirection = rotationMatrix * glm::vec4(-1.0f, 0.0f, 0.0f, 1.0f); // Original direction as vec4
 }
 
 void Realtime::setupShapesGL() {
@@ -796,7 +871,7 @@ void Realtime::setupShapeData() {
     vboData.clear();
     shapeSizes.clear();
     shapeStartIndices.clear();
-    int shapeParameter1 = settings.shapeParameter1;
+    int shapeParameter1 = settings.bumpiness;
     int shapeParameter2 = settings.shapeParameter2;
 
     // Adaptive level of detail for object complexity
@@ -884,6 +959,10 @@ void Realtime::setupShapeData() {
         shapeDataList.push_back(tempShapeDataList[i]);
         modelMatrixList.push_back(tempModelMatrixList[i]);
     }
+    for (int i = 0; i < staticParticleNum; ++i) {
+        shapeDataList.push_back(staticShapeDataList[i]);
+        modelMatrixList.push_back(staticMatrixList[i]);
+    }
     int currentIndex = 0;
     for (const auto& shapeData : shapeDataList) {
         // Record the starting index of this shape.
@@ -901,15 +980,15 @@ void Realtime::setupShapeData() {
 }
 
 void Realtime::setupTerrainData() {
-    int shapeParameter1 = settings.shapeParameter1;
+    int shapeParameter1 = settings.bumpiness;
     int shapeParameter2 = settings.shapeParameter2;
 
-    // Set the lower bound of shape parameters
-    shapeParameter1 = int(std::max(1, shapeParameter1));
-    shapeParameter2 = int(std::max(3, shapeParameter2));
+//    // Set the lower bound of shape parameters
+//    shapeParameter1 = int(std::max(1, shapeParameter1));
+//    shapeParameter2 = int(std::max(3, shapeParameter2));
 
     TerrainGenerator testTerrain;
-    terrainData = testTerrain.generateTerrain();
+    terrainData = testTerrain.generateTerrain(QString::fromStdString(settings.heightMapPath), settings.bumpiness);
     terrainModelMatrix = glm::mat4(1);
 
     terrainVboData = terrainData;
@@ -965,7 +1044,6 @@ void Realtime::resetScene() {
 
     timeTracker = 0;
     snowTimer = 0;
-    rainTimer = 0;
     sunTimer = 0;
 }
 

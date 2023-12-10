@@ -34,7 +34,7 @@ particle ParticleSystem::init_particle(){
     particle p;
 
     p.position=glm::vec3(x,y,z);
-    p.velocity=glm::vec3(0,-0.1,0);
+    p.velocity=glm::vec3(0,-0.6,0);
     p.theta=pi_dis(m_gen);
     p.phi=pi_dis(m_gen)/12;
     p.omega=(uniform_dis(m_gen)-0.5)/1;
