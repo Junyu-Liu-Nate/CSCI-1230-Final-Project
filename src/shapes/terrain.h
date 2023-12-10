@@ -12,11 +12,11 @@ public:
     TerrainGenerator();
     ~TerrainGenerator();
     int getResolution() { return m_resolution; };
-    std::vector<float> generateTerrain();
+    std::vector<float> generateTerrain(int bumpiness);
 
     // Takes a normalized (x, y) position, in range [0,1)
     // Returns a height value, z, by sampling a noise function
-    float getHeight(float x, float y);
+    float getHeight(float x, float y, int bump);
 private:
 
     // Member variables for terrain generation. You will not need to use these directly.
@@ -29,12 +29,12 @@ private:
 
     // Takes a grid coordinate (row, col), [0, m_resolution), which describes a vertex in a plane mesh
     // Returns a normalized position (x, y, z); x and y in range from [0, 1), and z is obtained from getHeight()
-    glm::vec3 getPosition(int row, int col);
+    glm::vec3 getPosition(int row, int col, int bump);
 
     // ================== Students, please focus on the code below this point
 
     // Computes the normal of a vertex by averaging neighbors
-    glm::vec3 getNormal(int row, int col);
+    glm::vec3 getNormal(int row, int col, int bump);
 
     // Computes color of vertex using normal and, optionally, position
     glm::vec3 getColor(glm::vec3 normal, glm::vec3 position);
@@ -42,5 +42,6 @@ private:
     // Computes the intensity of Perlin noise at some point
     float computePerlin(float x, float y);
 
+    int param;
     QImage heightmapImage;
 };

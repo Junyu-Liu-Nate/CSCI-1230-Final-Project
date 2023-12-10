@@ -5,7 +5,8 @@
 
 struct Settings {
     std::string sceneFilePath;
-    int shapeParameter1 = 1;
+    int speed = 1;
+    int bumpiness = 1;
     int shapeParameter2 = 1;
     float nearPlane = 1;
     float farPlane = 1;

@@ -229,7 +229,6 @@ void Realtime::paintGL() {
     // Update timers
     timeTracker += 1;
     if (settings.snow) {snowTimer += 1;}
-//    if (settings.rain) {rainTimer += 1;}
     if (settings.sun) {sunTimer += 1;}
 
     // Bind FBO
@@ -315,7 +314,6 @@ void Realtime::paintGeometry() {
     glUseProgram(m_shader);
 
     glUniform1i(glGetUniformLocation(m_shader, "snowTimer"), snowTimer);
-//    glUniform1i(glGetUniformLocation(m_shader, "rainTimer"), rainTimer);
     glUniform1i(glGetUniformLocation(m_shader, "sunTimer"), sunTimer);
 
     // Pass m_ka, m_kd, m_ks into the fragment shader as a uniform
@@ -584,7 +582,6 @@ void Realtime::paintTerrain() {
 
     // ====== Accumulation timers
     glUniform1i(glGetUniformLocation(m_terrain_shader, "snowTimer"), snowTimer);
-//    glUniform1i(glGetUniformLocation(m_terrain_shader, "rainTimer"), rainTimer);
     glUniform1i(glGetUniformLocation(m_terrain_shader, "sunTimer"), sunTimer);
 
     // Draw Command
@@ -623,7 +620,7 @@ void Realtime::updateTerrainCollisionMap() {
         float y = particle.position.y;
         float z = particle.position.z;
 
-        float terrainHeight = terrainGenerator.getHeight(x, z);
+        float terrainHeight = terrainGenerator.getHeight(x, z, settings.bumpiness);
 
         if (y <= terrainHeight) {
             // TODO: Should kill this particle
@@ -710,7 +707,7 @@ void Realtime::sceneChanged() {
 }
 
 void Realtime::settingsChanged() {
-    if (settings.shapeParameter1 != shapeParameter1Saved || settings.shapeParameter2 != shapeParameter2Saved) {
+    if (settings.bumpiness != shapeParameter1Saved || settings.shapeParameter2 != shapeParameter2Saved) {
         shapeDataList.clear();
         vboData.clear();
         shapeStartIndices.clear();
@@ -734,7 +731,7 @@ void Realtime::settingsChanged() {
             m_proj = renderScene.sceneCamera.getProjectMatrix();
         }
 
-        shapeParameter1Saved = settings.shapeParameter1;
+        shapeParameter1Saved = settings.bumpiness;
         shapeParameter2Saved = settings.shapeParameter2;
     }
 
@@ -789,7 +786,7 @@ void Realtime::setupShapeData() {
     vboData.clear();
     shapeSizes.clear();
     shapeStartIndices.clear();
-    int shapeParameter1 = settings.shapeParameter1;
+    int shapeParameter1 = settings.bumpiness;
     int shapeParameter2 = settings.shapeParameter2;
 
     // Adaptive level of detail for object complexity
@@ -894,15 +891,15 @@ void Realtime::setupShapeData() {
 }
 
 void Realtime::setupTerrainData() {
-    int shapeParameter1 = settings.shapeParameter1;
+    int shapeParameter1 = settings.bumpiness;
     int shapeParameter2 = settings.shapeParameter2;
 
-    // Set the lower bound of shape parameters
-    shapeParameter1 = int(std::max(1, shapeParameter1));
-    shapeParameter2 = int(std::max(3, shapeParameter2));
+//    // Set the lower bound of shape parameters
+//    shapeParameter1 = int(std::max(1, shapeParameter1));
+//    shapeParameter2 = int(std::max(3, shapeParameter2));
 
     TerrainGenerator testTerrain;
-    terrainData = testTerrain.generateTerrain();
+    terrainData = testTerrain.generateTerrain(settings.bumpiness);
     terrainModelMatrix = glm::mat4(1);
 
     terrainVboData = terrainData;
@@ -958,7 +955,6 @@ void Realtime::resetScene() {
 
     timeTracker = 0;
     snowTimer = 0;
-//    rainTimer = 0;
     sunTimer = 0;
 }
 

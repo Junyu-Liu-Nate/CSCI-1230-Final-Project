@@ -45,10 +45,10 @@ void MainWindow::initialize() {
     QLabel *ec_label = new QLabel(); // Extra Credit label
     ec_label->setText("Rasterization Effects");
     ec_label->setFont(font);
-    QLabel *param1_label = new QLabel(); // Parameter 1 label
-    param1_label->setText("Parameter 1:");
-    QLabel *param2_label = new QLabel(); // Parameter 2 label
-    param2_label->setText("Parameter 2:");
+    QLabel *bumpiness_label = new QLabel(); // Bumpiness label
+    bumpiness_label->setText("Bumpiness:");
+    QLabel *speed_label = new QLabel(); // Speed label
+    speed_label->setText("Speed: ");
     QLabel *near_label = new QLabel(); // Near plane label
     near_label->setText("Near Plane:");
     QLabel *far_label = new QLabel(); // Far plane label
@@ -72,44 +72,44 @@ void MainWindow::initialize() {
     saveImage->setText(QStringLiteral("Save image"));
 
     // Creates the boxes containing the parameter sliders and number boxes
-    QGroupBox *p1Layout = new QGroupBox(); // horizonal slider 1 alignment
+    QGroupBox *bumpinessLayout = new QGroupBox();
     QHBoxLayout *l1 = new QHBoxLayout();
-//    QGroupBox *p2Layout = new QGroupBox(); // horizonal slider 2 alignment
-//    QHBoxLayout *l2 = new QHBoxLayout();
+    QGroupBox *speedLayout = new QGroupBox();
+    QHBoxLayout *l2 = new QHBoxLayout();
 
     // Create slider controls to control parameters
-    p1Slider = new QSlider(Qt::Orientation::Horizontal); // Parameter 1 slider
-    p1Slider->setTickInterval(1);
-    p1Slider->setMinimum(1);
-    p1Slider->setMaximum(25);
-    p1Slider->setValue(1);
+    bumpinessSlider = new QSlider(Qt::Orientation::Horizontal); // bumpiness slider
+    bumpinessSlider->setTickInterval(1);
+    bumpinessSlider->setMinimum(1);
+    bumpinessSlider->setMaximum(6);
+    bumpinessSlider->setValue(1);
 
-    p1Box = new QSpinBox();
-    p1Box->setMinimum(1);
-    p1Box->setMaximum(25);
-    p1Box->setSingleStep(1);
-    p1Box->setValue(1);
+    bumpinessBox = new QSpinBox();
+    bumpinessBox->setMinimum(1);
+    bumpinessBox->setMaximum(6);
+    bumpinessBox->setSingleStep(1);
+    bumpinessBox->setValue(1);
 
-//    p2Slider = new QSlider(Qt::Orientation::Horizontal); // Parameter 2 slider
-//    p2Slider->setTickInterval(1);
-//    p2Slider->setMinimum(1);
-//    p2Slider->setMaximum(25);
-//    p2Slider->setValue(1);
+    speedSlider = new QSlider(Qt::Orientation::Horizontal); // speed slider
+    speedSlider->setTickInterval(1);
+    speedSlider->setMinimum(1);
+    speedSlider->setMaximum(25);
+    speedSlider->setValue(1);
 
-//    p2Box = new QSpinBox();
-//    p2Box->setMinimum(1);
-//    p2Box->setMaximum(25);
-//    p2Box->setSingleStep(1);
-//    p2Box->setValue(1);
+    speedBox = new QSpinBox();
+    speedBox->setMinimum(1);
+    speedBox->setMaximum(25);
+    speedBox->setSingleStep(1);
+    speedBox->setValue(1);
 
-    // Adds the slider and number box to the parameter layouts
-    l1->addWidget(p1Slider);
-    l1->addWidget(p1Box);
-    p1Layout->setLayout(l1);
+    // Adds the slider and number box to bumpiness and speed layouts
+    l1->addWidget(bumpinessSlider);
+    l1->addWidget(bumpinessBox);
+    bumpinessLayout->setLayout(l1);
 
-//    l2->addWidget(p2Slider);
-//    l2->addWidget(p2Box);
-//    p2Layout->setLayout(l2);
+    l2->addWidget(speedSlider);
+    l2->addWidget(speedBox);
+    speedLayout->setLayout(l2);
 
     // Creates the boxes containing the camera sliders and number boxes
     QGroupBox *nearLayout = new QGroupBox(); // horizonal near slider alignment
@@ -228,15 +228,15 @@ void MainWindow::initialize() {
     vLayout->addWidget(accumulate);
     vLayout->addWidget(intensity_label);
     vLayout->addWidget(intensityLayout);
+    vLayout->addWidget(speed_label);
+    vLayout->addWidget(speedLayout);
     vLayout->addWidget(sun);
     vLayout->addWidget(time_label);
     vLayout->addWidget(timeLayout);
 
     vLayout->addWidget(tesselation_label);
-    vLayout->addWidget(param1_label);
-    vLayout->addWidget(p1Layout);
-//    vLayout->addWidget(param2_label);
-//    vLayout->addWidget(p2Layout);
+    vLayout->addWidget(bumpiness_label);
+    vLayout->addWidget(bumpinessLayout);
     vLayout->addWidget(camera_label);
     vLayout->addWidget(near_label);
     vLayout->addWidget(nearLayout);
@@ -254,10 +254,7 @@ void MainWindow::initialize() {
 
     connectUIElements();
 
-    // Set default values of 5 for tesselation parameters
-    onValChangeP1(5);
-//    onValChangeP2(5);
-
+    onValChangeBumpiness(1);
     onValChangeIntensity(50);
 
     // Set default values for near and far planes
@@ -277,7 +274,8 @@ void MainWindow::connectUIElements() {
     connectUploadFile();
     connectSaveImage();
     connectParam1();
-//    connectParam2();
+    connectTime();
+    connectSpeed();
     connectNear();
     connectFar();
     connectExtraCredit();
@@ -303,17 +301,17 @@ void MainWindow::connectSaveImage() {
     connect(saveImage, &QPushButton::clicked, this, &MainWindow::onSaveImage);
 }
 
-void MainWindow::connectParam1() {
-    connect(p1Slider, &QSlider::valueChanged, this, &MainWindow::onValChangeP1);
-    connect(p1Box, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-            this, &MainWindow::onValChangeP1);
+void MainWindow::connectSpeed() {
+    connect(speedSlider, &QSlider::valueChanged, this, &MainWindow::onValChangeSpeed);
+    connect(speedBox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+            this, &MainWindow::onValChangeSpeed);
 }
 
-//void MainWindow::connectParam2() {
-//    connect(p2Slider, &QSlider::valueChanged, this, &MainWindow::onValChangeP2);
-//    connect(p2Box, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-//            this, &MainWindow::onValChangeP2);
-//}
+void MainWindow::connectParam1() {
+    connect(bumpinessSlider, &QSlider::valueChanged, this, &MainWindow::onValChangeBumpiness);
+    connect(bumpinessBox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+            this, &MainWindow::onValChangeBumpiness);
+}
 
 void MainWindow::connectNear() {
     connect(nearSlider, &QSlider::valueChanged, this, &MainWindow::onValChangeNearSlider);
@@ -414,19 +412,19 @@ void MainWindow::onSaveImage() {
     realtime->saveViewportImage(filePath.toStdString());
 }
 
-void MainWindow::onValChangeP1(int newValue) {
-    p1Slider->setValue(newValue);
-    p1Box->setValue(newValue);
-    settings.shapeParameter1 = p1Slider->value();
+void MainWindow::onValChangeSpeed(int newValue) {
+    speedSlider->setValue(newValue);
+    speedBox->setValue(newValue);
+    settings.speed = speedSlider->value();
     realtime->settingsChanged();
 }
 
-//void MainWindow::onValChangeP2(int newValue) {
-//    p2Slider->setValue(newValue);
-//    p2Box->setValue(newValue);
-//    settings.shapeParameter2 = p2Slider->value();
-//    realtime->settingsChanged();
-//}
+void MainWindow::onValChangeBumpiness(int newValue) {
+    bumpinessSlider->setValue(newValue);
+    bumpinessBox->setValue(newValue);
+    settings.bumpiness = bumpinessSlider->value();
+    realtime->settingsChanged();
+}
 
 void MainWindow::onValChangeNearSlider(int newValue) {
     //nearSlider->setValue(newValue);
