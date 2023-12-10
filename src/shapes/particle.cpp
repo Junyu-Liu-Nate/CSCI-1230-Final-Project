@@ -8,7 +8,8 @@ ParticleSystem::ParticleSystem()
 
 
 void ParticleSystem::init_ParticleSystem()
-{
+{   particles.clear();
+    PosData.clear();
     for(int i=0;i<maxparticles;i++){
         particles.push_back(init_particle());
         PosData.push_back(particles[i].position.x);
@@ -17,6 +18,7 @@ void ParticleSystem::init_ParticleSystem()
     }
 
 }
+
 particle ParticleSystem::init_particle(){
     std::uniform_real_distribution<> uniform_dis(0,1);
     std::uniform_real_distribution<> height_dis(1,3);
@@ -54,7 +56,7 @@ void ParticleSystem::update_ParticleSystem(float deltaTime){
 
 
 void ParticleSystem::update_particle(particle & p){
-    if(!p.grounded&&p.lifetime>=0){
+    if(!p.grounded&&p.position.y>=-0.1){
         std::uniform_real_distribution<> uniform_dis(0,1);
         std::uniform_real_distribution<> pi_dis(0,2*M_PI);
         // update particles data from fram to frame
