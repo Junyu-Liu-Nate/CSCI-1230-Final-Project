@@ -635,13 +635,18 @@ void Realtime::updateTerrainCollisionMap() {
         float y = particle.position.y;
         float z = particle.position.z;
 
+        if (y >= 2.5) {
+            continue;
+        }
+
         float terrainHeight = terrainGenerator.getHeight(x, 1-z, settings.bumpiness);
+        float accumulateHeight;
         if (settings.increase) {
             if (x >=0 && x <= 1 && z >=0 && z <= 1) {
                 int row = z * 100;
                 int col = x * 100;
                 int accumulateIdx = row * 100 + col;
-                float accumulateHeight = matrixData[accumulateIdx] * accumulateRate;
+                accumulateHeight = matrixData[accumulateIdx] * accumulateRate;
                 terrainHeight += accumulateHeight;
             }
         }
@@ -655,6 +660,10 @@ void Realtime::updateTerrainCollisionMap() {
                     Square squareShape;
                     squareShape.updateParams(true, 1, 1, temp_imagePath);
                     staticShapeDataList.push_back(squareShape.generateShape());
+                    particle.position.y = terrainHeight + 0.01;
+                    if (settings.increase) {
+                        particle.position.y += accumulateHeight;
+                    }
                     staticMatrixList.push_back(particles->getParticleModelMatrix(&particle));
                     staticParticleNum ++;
                 }

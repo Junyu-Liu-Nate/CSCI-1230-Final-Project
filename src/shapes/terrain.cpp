@@ -195,13 +195,14 @@ float TerrainGenerator::getHeight(float x, float y, int bump) {
     else {
         float z1 = computePerlin(x * 2, y * 2) / 2;
         float z2 = computePerlin(x * 4, y * 4) / 4;
-        float z3 = computePerlin(x * 8, y * 8) / 8;
-        float z4 = computePerlin(x * 16, y * 16) / 16;
-        float z5 = computePerlin(x * 32, y * 32) / 32;
+//        float z3 = computePerlin(x * 8, y * 8) / 8;
+//        float z4 = computePerlin(x * 16, y * 16) / 16;
+//        float z5 = computePerlin(x * 32, y * 32) / 32;
 
 //        return 0.0f;
 
-        float z = z1 + z2 + z3 + z4 + z5;
+//        float z = z1 + z2 + z3 + z4 + z5;
+        float z = z1 + z2;
         return z;
     }
 }
