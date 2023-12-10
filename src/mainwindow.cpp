@@ -165,8 +165,8 @@ void MainWindow::initialize() {
     accumulate->setChecked(false);
 
     sun = new QCheckBox();
-    sun->setText(QStringLiteral("Sun"));
-    sun->setChecked(false);
+    sun->setText(QStringLiteral("Sun Moving"));
+    sun->setChecked(true);
 
     QGroupBox *intensityLayout = new QGroupBox(); // horizonal slider alignment
     QHBoxLayout *intensity = new QHBoxLayout();
@@ -256,6 +256,8 @@ void MainWindow::initialize() {
     vLayout->addWidget(ec2);
     vLayout->addWidget(ec3);
 //    vLayout->addWidget(ec4);
+
+    settings.sun = sun->isChecked();
 
     connectUIElements();
 
@@ -494,6 +496,7 @@ void MainWindow::onAccumulate() {
 
 void MainWindow::onSun() {
     settings.sun = !settings.sun;
+//    settings.sun = sun->isChecked();
     realtime->settingsChanged();
 }
 

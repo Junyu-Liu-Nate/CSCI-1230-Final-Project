@@ -946,10 +946,13 @@ void Realtime::setupShapeData() {
         shapeDataList.push_back(tempShapeDataList[i]);
         modelMatrixList.push_back(tempModelMatrixList[i]);
     }
-    for (int i = 0; i < staticParticleNum; ++i) {
-        shapeDataList.push_back(staticShapeDataList[i]);
-        modelMatrixList.push_back(staticMatrixList[i]);
+    if (settings.accumulate) {
+        for (int i = 0; i < staticParticleNum; ++i) {
+            shapeDataList.push_back(staticShapeDataList[i]);
+            modelMatrixList.push_back(staticMatrixList[i]);
+        }
     }
+
     int currentIndex = 0;
     for (const auto& shapeData : shapeDataList) {
         // Record the starting index of this shape.

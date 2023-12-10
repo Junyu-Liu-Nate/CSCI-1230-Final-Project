@@ -152,7 +152,6 @@ private:
     GLuint m_fbo_texture;
     GLuint m_fbo_renderbuffer;
 
-
     void makeFBO();
     void paintFrame(GLuint texture);
 
