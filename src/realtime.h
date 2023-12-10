@@ -72,7 +72,7 @@ private:
     void resetScene();
     void paintGeometry();
 
-    int shapeParameter1Saved = settings.shapeParameter1;
+    int shapeParameter1Saved = settings.bumpiness;
     int shapeParameter2Saved = settings.shapeParameter2;
     QString texture_filepath_saved = QString::fromStdString("");
 
@@ -126,7 +126,6 @@ private:
     // ======= Weather-related
     int timeTracker = 0;
     int snowTimer = 0;
-    int rainTimer = 0;
     int sunTimer = 0;
 
     float rotationSpeedScale = 0.25;
