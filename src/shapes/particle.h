@@ -68,6 +68,10 @@ public:
     std::vector<particle>& getParticles() {
         return particles;
     }
+
+    void updateSpeed() {
+        velocityValue = settings.speed * 0.2;
+    }
 private:
     void init_ParticleSystem();
 
@@ -78,7 +82,7 @@ private:
 
     std::vector<particle>particles;
     std::vector<float>PosData;
-    int maxparticles=1000;
+    int maxparticles=settings.intensity;
 
     float deltaT=0.001;
     std::random_device rd;

@@ -67,7 +67,7 @@ void ParticleSystem::update_particle(particle & p){
         float angle=pi_dis(m_gen);
         p.position+=p.velocity*this->deltaT;
         p.velocity+=p.acceleration*this->deltaT;
-        p.velocity.y=-velocityValue;
+        p.velocity.y = -velocityValue;
         float acclerationValue = settings.speed * 0.05;
         //    p.acceleration=glm::vec3(0.05*glm::cos(angle),0,0.05*glm::sin(angle));
         p.acceleration=glm::vec3(acclerationValue*glm::cos(angle),0,acclerationValue*glm::sin(angle));

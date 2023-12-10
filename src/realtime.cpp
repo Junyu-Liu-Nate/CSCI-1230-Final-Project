@@ -763,7 +763,7 @@ void Realtime::settingsChanged() {
 //    int newNum=int(1000*((1.0f*settings.intensity)/100.f));
     int newNum=settings.intensity;
     bool flagIntensity=std::abs(oldNum-newNum)>100?true:false;
-    if (flagIntensity||settings.bumpiness != shapeParameter1Saved || settings.shapeParameter2 != shapeParameter2Saved) {
+    if (flagIntensity||settings.bumpiness != shapeParameter1Saved) {
         shapeDataList.clear();
         vboData.clear();
         shapeStartIndices.clear();
@@ -795,6 +795,8 @@ void Realtime::settingsChanged() {
         shapeParameter1Saved = settings.bumpiness;
         shapeParameter2Saved = settings.shapeParameter2;
     }
+
+    particles->updateSpeed();
 
     if (settings.sun != isSunMove) {
         isSunMove = settings.sun;
