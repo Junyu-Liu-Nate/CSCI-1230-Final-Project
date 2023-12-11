@@ -768,11 +768,15 @@ void Realtime::settingsChanged() {
 //    int newNum=int(1000*((1.0f*settings.intensity)/100.f));
     int newNum=settings.intensity;
     bool flagIntensity=std::abs(oldNum-newNum)>100?true:false;
-    if (flagIntensity||settings.bumpiness != shapeParameter1Saved) {
+    if (flagIntensity || settings.bumpiness != shapeParameter1Saved) {
         shapeDataList.clear();
         vboData.clear();
         shapeStartIndices.clear();
         shapeSizes.clear();
+
+        staticParticleNum = 0;
+        staticShapeDataList.clear();
+        staticMatrixList.clear();
 
         m_view = glm::mat4(1.0f);
         m_proj = glm::mat4(1.0f);
