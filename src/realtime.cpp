@@ -773,14 +773,22 @@ void Realtime::settingsChanged() {
         vboData.clear();
         shapeStartIndices.clear();
         shapeSizes.clear();
+
+        if (!settings.sceneFilePath.empty()) {
+            if (flagIntensity) {
+                particles->updateNum(newNum);
+                particles->updateSpeed();
+                setupShapesGL();
+            }
+        }
     }
 
 
     if (settings.bumpiness != shapeParameter1Saved) {
-        shapeDataList.clear();
-        vboData.clear();
-        shapeStartIndices.clear();
-        shapeSizes.clear();
+//        shapeDataList.clear();
+//        vboData.clear();
+//        shapeStartIndices.clear();
+//        shapeSizes.clear();
 
         staticParticleNum = 0;
         staticShapeDataList.clear();
@@ -798,10 +806,10 @@ void Realtime::settingsChanged() {
                                       metaData);
 //            particles->updateNum(newNum);
 //                std::make_shared<ParticleSystem>(newNum);
-            if (flagIntensity) {
-                particles->updateNum(newNum);
-                setupShapesGL();
-            }
+//            if (flagIntensity) {
+//                particles->updateNum(newNum);
+//                setupShapesGL();
+//            }
 //            setupShapesGL();
             setupTerrainGL();
             // Setup camera data from the scene
