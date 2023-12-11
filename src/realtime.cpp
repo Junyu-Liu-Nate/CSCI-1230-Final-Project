@@ -239,14 +239,19 @@ void Realtime::paintGL() {
     // Clear screen color and depth before painting
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // ====== Draw with terrain shader
-    if (settings.sun) {
-        updateSunlight(sunlightOriginalDirection);
-    }
-    paintTerrain();
+    if (!settings.sceneFilePath.empty()) {
+        // ====== Draw with terrain shader
+        if (settings.sun) {
+            updateSunlight(sunlightOriginalDirection);
+        }
+        paintTerrain();
 
-    // ====== Draw with default shader
-    paintGeometry();
+        // ====== Draw with default shader
+        if (settings.snow) {
+            paintGeometry();
+        }
+    }
+
 
     // ====== Draw with frame shader
     // Bind the default framebuffer
@@ -630,58 +635,59 @@ void Realtime::updateSunlight(glm::vec4 originalDirection) {
 }
 
 void Realtime::updateTerrainCollisionMap() {
-    for (auto &particle : particles->getParticles()) {
-        float x = particle.position.x;
-        float y = particle.position.y;
-        float z = particle.position.z;
+    if (settings.snow) {
+        for (auto &particle : particles->getParticles()) {
+            float x = particle.position.x;
+            float y = particle.position.y;
+            float z = particle.position.z;
 
-        if (y >= 2.5) {
-            continue;
-        }
-
-        float terrainHeight = terrainGenerator.getHeight(x, 1-z, settings.bumpiness);
-        float accumulateHeight;
-        if (settings.increase) {
-            if (x >=0 && x <= 1 && z >=0 && z <= 1) {
-                int row = z * 100;
-                int col = x * 100;
-                int accumulateIdx = row * 100 + col;
-                accumulateHeight = matrixData[accumulateIdx] * accumulateRate;
-                terrainHeight += accumulateHeight;
+            if (y >= 2.5) {
+                continue;
             }
-        }
 
-        if (y <= terrainHeight) {
-            if (x >=0 && x <= 1 && z >=0 && z <= 1) {
-                // Add shape info to static list
-                // TODO: Need to update ParticleModelMatrix by moving the particle upwards by accumulateRate
-                if (settings.accumulate) {
-                    QString temp_imagePath = "/scenefiles/textures/snowflake.png";
-                    Square squareShape;
-                    squareShape.updateParams(true, 1, 1, temp_imagePath);
-                    staticShapeDataList.push_back(squareShape.generateShape());
-                    particle.position.y = terrainHeight + 0.01;
-                    if (settings.increase) {
-                        particle.position.y += accumulateHeight;
-                    }
-                    staticMatrixList.push_back(particles->getParticleModelMatrix(&particle));
-                    staticParticleNum ++;
+            float terrainHeight = terrainGenerator.getHeight(x, 1-z, settings.bumpiness);
+            float accumulateHeight;
+            if (settings.increase) {
+                if (x >=0 && x <= 1 && z >=0 && z <= 1) {
+                    int row = z * 100;
+                    int col = x * 100;
+                    int accumulateIdx = row * 100 + col;
+                    accumulateHeight = matrixData[accumulateIdx] * accumulateRate;
+                    terrainHeight += accumulateHeight;
                 }
+            }
 
+            if (y <= terrainHeight) {
+                if (x >=0 && x <= 1 && z >=0 && z <= 1) {
+                    // Add shape info to static list
+                    if (settings.accumulate) {
+                        QString temp_imagePath = "/scenefiles/textures/snowflake.png";
+                        Square squareShape;
+                        squareShape.updateParams(true, 1, 1, temp_imagePath);
+                        staticShapeDataList.push_back(squareShape.generateShape());
+                        particle.position.y = terrainHeight + 0.01;
+                        if (settings.increase) {
+                            particle.position.y += accumulateHeight;
+                        }
+                        staticMatrixList.push_back(particles->getParticleModelMatrix(&particle));
+                        staticParticleNum ++;
+                    }
+
+                    // Kill this particle
+                    particle.grounded = true;
+
+                    // TODO: May need to replace 100 with actual resolution
+                    int row = z * 100;
+                    int col = x * 100;
+                    int accumulateIdx = row * 100 + col;
+                    matrixData[accumulateIdx]++;
+                }
+            }
+
+            if (y < -1) {
                 // Kill this particle
                 particle.grounded = true;
-
-                // TODO: May need to replace 100 with actual resolution
-                int row = z * 100;
-                int col = x * 100;
-                int accumulateIdx = row * 100 + col;
-                matrixData[accumulateIdx]++;
             }
-        }
-
-        if (y < -1) {
-            // Kill this particle
-            particle.grounded = true;
         }
     }
 }
@@ -758,7 +764,6 @@ void Realtime::sceneChanged() {
 }
 
 void Realtime::settingsChanged() {
-  
     int oldNum=particles->getParticleNum();
 //    int newNum=int(1000*((1.0f*settings.intensity)/100.f));
     int newNum=settings.intensity;

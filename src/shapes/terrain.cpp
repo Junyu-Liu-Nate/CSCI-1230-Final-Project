@@ -183,7 +183,7 @@ float TerrainGenerator::getHeight(float x, float y, int bump) {
 
         float height = qGray(heightmapImage.pixel(i, j));
         float z = 0;
-        int factor = 8;
+        int factor = 2;
 
         for (int n = 0; n < bump; n++) {
             z += computePerlin(x * factor, y * factor) / factor;
@@ -193,16 +193,23 @@ float TerrainGenerator::getHeight(float x, float y, int bump) {
         return height / 1600.f + z; // divided by 800 instead of 255 so that the terrain appears smoother
     }
     else {
-        float z1 = computePerlin(x * 2, y * 2) / 2;
-        float z2 = computePerlin(x * 4, y * 4) / 4;
+//        float z1 = computePerlin(x * 2, y * 2) / 2;
+//        float z2 = computePerlin(x * 4, y * 4) / 4;
 //        float z3 = computePerlin(x * 8, y * 8) / 8;
-//        float z4 = computePerlin(x * 16, y * 16) / 16;
-//        float z5 = computePerlin(x * 32, y * 32) / 32;
+        float z4 = computePerlin(x * 16, y * 16) / 16;
+        float z5 = computePerlin(x * 32, y * 32) / 32;
 
 //        return 0.0f;
 
 //        float z = z1 + z2 + z3 + z4 + z5;
-        float z = z1 + z2;
+        float z = z4 + z5;
+
+        int factor = 2;
+        for (int n = 0; n < bump; n++) {
+            z += computePerlin(x * factor, y * factor) / factor;
+            factor *= 2;
+        }
+
         return z;
     }
 }

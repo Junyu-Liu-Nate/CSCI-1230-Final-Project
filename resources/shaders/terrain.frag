@@ -49,7 +49,7 @@ void main() {
     // ====== Snow color
     vec4 snowColor = vec4(0.0);
     float colorValue = accumulateCount * 0.2;
-    colorValue = clamp(colorValue, 0.0, 0.8);
+    colorValue = clamp(colorValue, 0.0, 0.5);
     if (vertexWorldSpacePos.y > 0.06) {
         snowColor = vec4(colorValue, colorValue, colorValue, 1);
     }
@@ -72,9 +72,9 @@ void main() {
 //        vec4 snowColor = vec4(colorValue, colorValue, colorValue, 1);
 
     // ====== Add ambient component to output color
-    fragColor.x += ka * cAmbient.x + colorValue;
-    fragColor.y += ka * cAmbient.y + colorValue;
-    fragColor.z += ka * cAmbient.z + colorValue;
+    fragColor.x += ka * cAmbient.x + clamp(colorValue, 0.0, 0.2);
+    fragColor.y += ka * cAmbient.y + clamp(colorValue, 0.0, 0.2);
+    fragColor.z += ka * cAmbient.z + clamp(colorValue, 0.0, 0.2);
 
     for (int i = 0; i < 8; i++) {
         float att;
