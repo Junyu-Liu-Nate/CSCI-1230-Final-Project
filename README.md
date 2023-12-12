@@ -26,7 +26,7 @@
   ![Alt text](img/terrain_4.jpg)
 
 ### Particle system
-
+The particle system uses a two-sided square primitive for simple snowflake rotation and minimal triangle calculations. Snowflake velocity is constant in the y-direction, balancing gravity and air resistance, with random radial acceleration for wind simulation. Snowflakes reinitialize upon reaching the terrain or falling below `y=-0.1`.
 ![Alt text](img/particle_1.jpg)
 
 - **Adjust the speed**:
