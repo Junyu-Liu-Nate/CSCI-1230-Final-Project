@@ -78,8 +78,6 @@ private:
 
     // ====== Particle-related
     void paintParticle();
-    void setupParticleGL();
-    void setupParticle();
     void update_particle_vbo();
 
     std::shared_ptr<ParticleSystem> particles = std::make_shared<ParticleSystem>();

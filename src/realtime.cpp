@@ -375,75 +375,9 @@ void Realtime::paintGeometry() {
     glUniform1i(glGetUniformLocation(m_shader, "snowTimer"), snowTimer);
     glUniform1i(glGetUniformLocation(m_shader, "sunTimer"), sunTimer);
 
-    // Pass m_ka, m_kd, m_ks into the fragment shader as a uniform
-    glUniform1f(glGetUniformLocation(m_shader, "ka"), renderScene.getGlobalData().ka);
-    glUniform1f(glGetUniformLocation(m_shader, "kd"), renderScene.getGlobalData().kd);
-    glUniform1f(glGetUniformLocation(m_shader, "ks"), renderScene.getGlobalData().ks);
-
-    // Pass light info
-    int lightCounter = 0;
-    for (SceneLightData &light : renderScene.sceneMetaData.lights) {
-        if (light.type == LightType::LIGHT_DIRECTIONAL) {
-            GLint loc1 = glGetUniformLocation(m_shader, ("lightTypes[" + std::to_string(lightCounter) + "]").c_str());
-            glUniform1f(loc1, 0);
-
-            GLint loc2 = glGetUniformLocation(m_shader, ("lightColors[" + std::to_string(lightCounter) + "]").c_str());
-            glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
-
-            GLint loc3 = glGetUniformLocation(m_shader, ("lightDirections[" + std::to_string(lightCounter) + "]").c_str());
-            glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
-        }
-        if (light.type == LightType::LIGHT_POINT) {
-            GLint loc1 = glGetUniformLocation(m_shader, ("lightTypes[" + std::to_string(lightCounter) + "]").c_str());
-            glUniform1f(loc1, 1);
-
-            GLint loc2 = glGetUniformLocation(m_shader, ("lightColors[" + std::to_string(lightCounter) + "]").c_str());
-            glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
-
-            GLint loc4 = glGetUniformLocation(m_shader, ("lightPositions[" + std::to_string(lightCounter) + "]").c_str());
-            glUniform3f(loc4, light.pos.x, light.pos.y, light.pos.z);
-
-            GLint loc7 = glGetUniformLocation(m_shader, ("lightFunctions[" + std::to_string(lightCounter) + "]").c_str());
-            glUniform3f(loc7, light.function.x, light.function.y, light.function.z);
-        }
-        if (light.type == LightType::LIGHT_SPOT) {
-            GLint loc1 = glGetUniformLocation(m_shader, ("lightTypes[" + std::to_string(lightCounter) + "]").c_str());
-            glUniform1f(loc1, 2);
-
-            GLint loc2 = glGetUniformLocation(m_shader, ("lightColors[" + std::to_string(lightCounter) + "]").c_str());
-            glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
-
-            GLint loc3 = glGetUniformLocation(m_shader, ("lightDirections[" + std::to_string(lightCounter) + "]").c_str());
-            glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
-
-            GLint loc4 = glGetUniformLocation(m_shader, ("lightPositions[" + std::to_string(lightCounter) + "]").c_str());
-            glUniform3f(loc4, light.pos.x, light.pos.y, light.pos.z);
-
-            GLint loc5 = glGetUniformLocation(m_shader, ("lightAngles[" + std::to_string(lightCounter) + "]").c_str());
-            glUniform1f(loc5, light.angle);
-
-            GLint loc6 = glGetUniformLocation(m_shader, ("lightPenumbras[" + std::to_string(lightCounter) + "]").c_str());
-            glUniform1f(loc6, light.penumbra);
-
-            GLint loc7 = glGetUniformLocation(m_shader, ("lightFunctions[" + std::to_string(lightCounter) + "]").c_str());
-            glUniform3f(loc7, light.function.x, light.function.y, light.function.z);
-        }
-
-        lightCounter ++;
-        if (lightCounter >= 8) {
-            break;
-        }
-    }
-
-    // Reset remaining lights if the current scene has fewer than 8 lights
-    for (int i = lightCounter; i < 8; i++) {
-        glUniform1f(glGetUniformLocation(m_shader, ("lightTypes[" + std::to_string(i) + "]").c_str()), -1); // Set to an invalid type
-        glUniform3f(glGetUniformLocation(m_shader, ("lightColors[" + std::to_string(i) + "]").c_str()), 0.0f, 0.0f, 0.0f);
-        glUniform3f(glGetUniformLocation(m_shader, ("lightDirections[" + std::to_string(i) + "]").c_str()), 0.0f, 0.0f, 0.0f);
-        glUniform3f(glGetUniformLocation(m_shader, ("lightPositions[" + std::to_string(i) + "]").c_str()), 0.0f, 0.0f, 0.0f);
-    }
 
     // Pass shape info and draw shape
+    for (int i = 1; i < shapeStartIndices.size(); i++) {
     for (int i = 1; i < shapeStartIndices.size(); i++) {
         // Pass in model matrix for shape i as a uniform into the shader program
         glUniformMatrix4fv(glGetUniformLocation(m_shader, "modelMatrix"), 1, GL_FALSE, &modelMatrixList[i][0][0]);
@@ -453,12 +387,6 @@ void Realtime::paintGeometry() {
         // Pass in m_view and m_proj
         glUniformMatrix4fv(glGetUniformLocation(m_shader, "viewMatrix"), 1, GL_FALSE, &m_view[0][0]);
         glUniformMatrix4fv(glGetUniformLocation(m_shader, "projectMatrix"), 1, GL_FALSE, &m_proj[0][0]);
-        //        glUniform4fv(glGetUniformLocation(m_shader, "cAmbient"), 1, &renderScene.sceneMetaData.shapes[i].primitive.material.cAmbient[0]);
-        //        glUniform4fv(glGetUniformLocation(m_shader, "cDiffuse"), 1, &renderScene.sceneMetaData.shapes[i].primitive.material.cDiffuse[0]);
-        //        glUniform4fv(glGetUniformLocation(m_shader, "cSpecular"), 1, &renderScene.sceneMetaData.shapes[i].primitive.material.cSpecular[0]);
-        glUniform4fv(glGetUniformLocation(m_shader, "cAmbient"), 1, &renderScene.sceneMetaData.shapes[0].primitive.material.cAmbient[0]);
-        glUniform4fv(glGetUniformLocation(m_shader, "cDiffuse"), 1, &renderScene.sceneMetaData.shapes[0].primitive.material.cDiffuse[0]);
-        glUniform4fv(glGetUniformLocation(m_shader, "cSpecular"), 1, &renderScene.sceneMetaData.shapes[0].primitive.material.cSpecular[0]);
 
         bool isShapeTexture = true;
         if (isShapeTexture) {
@@ -761,7 +689,6 @@ void Realtime::resizeGL(int w, int h) {
                                   metaData);
         setupShapesGL();
         setupTerrainGL();
-        setupParticle();
 
         // Setup camera data from the scene
         m_view = renderScene.sceneCamera.getViewMatrix();
@@ -788,7 +715,6 @@ void Realtime::sceneChanged() {
                               settings.farPlane,
                               metaData);
 
-    setupParticle();
     setupShapesGL();
     setupTerrainGL();
 
@@ -835,6 +761,7 @@ void Realtime::settingsChanged() {
                                       settings.farPlane,
                                       metaData);
             setupTerrainGL();
+
             // Setup camera data from the scene
             m_view = renderScene.sceneCamera.getViewMatrix();
             m_proj = renderScene.sceneCamera.getProjectMatrix();
@@ -988,7 +915,6 @@ void Realtime::setupShapeData() {
             Mesh mesh = loadMesh(shape.primitive.meshfile);
             shapeDataList.push_back(mesh.generateVertexData());
         }
-
         modelMatrixList.push_back(shape.ctm);
         shapeIdx++;
     }
@@ -1295,132 +1221,10 @@ void Realtime::saveViewportImage(std::string filePath) {
     glDeleteRenderbuffers(1, &rbo);
     glDeleteFramebuffers(1, &fbo);
 }
-//void Realtime::paintParticle() {
-
-//    glEnable(GL_PROGRAM_POINT_SIZE);
-//    glBindVertexArray(m_particle_vao);
-//    glUseProgram(m_particle_shader);
-//    glUniformMatrix4fv(glGetUniformLocation(m_shader, "viewMatrix"), 1, GL_FALSE, &m_view[0][0]);
-//    glUniformMatrix4fv(glGetUniformLocation(m_particle_shader, "projectMatrix"), 1, GL_FALSE, &m_proj[0][0]);
-//    //glUniform1f(glGetUniformLocation(m_particle_shader, "pointSize"), 10);
-
-//    // 修改这里以绘制三角形
-//    glDrawArrays(GL_TRIANGLES, 0, 3); // 假设 m_particle_data 包含至少3个顶点
-
-//    glBindVertexArray(0);
-//    glBindTexture(GL_TEXTURE_2D, 0);
-//    glUseProgram(0);
-//}
 
 
-//void Realtime::paintParticle() {
-
-//    glEnable(GL_PROGRAM_POINT_SIZE);
-//    glBindVertexArray(m_particle_vao);
-//    glUseProgram(m_particle_shader);
 
 
-//    bool isParticleTexture = true;
-//    if (isParticleTexture) {
-//        texture_filepath_saved = "";
-//        QString currentDir = QDir::currentPath();
-//        //QString texture_filepath = currentDir + QString::fromStdString("/scenefiles/textures/snowflake.jpg");
-//        glUniform1f(glGetUniformLocation(m_particle_shader, "useTexture"), 1.0);
 
 
-//        if (texture_filepath_saved != texture_filepath) {
-//            QImage particleImage(texture_filepath);
-//            if (particleImage.isNull()) {
-//                std::cerr << "Failed to load particle texture image: " << texture_filepath.toStdString() << std::endl;
-//                glUniform1f(glGetUniformLocation(m_particle_shader, "useTexture"), 0);
-//            } else {
-//                particleImage = particleImage.convertToFormat(QImage::Format_RGBA8888).mirrored();
 
-//                GLuint particleTexture;
-//                glGenTextures(1, &particleTexture);
-//                glActiveTexture(GL_TEXTURE1);
-//                glBindTexture(GL_TEXTURE_2D, particleTexture);
-
-
-//                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, particleImage.width(), particleImage.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, particleImage.bits());
-//                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-
-//                GLint textureUniform = glGetUniformLocation(m_particle_shader, "particleTexture");
-//                glUniform1i(textureUniform, 1);
-
-//                texture_filepath_saved = texture_filepath; // 更新已保存的纹理文件路径
-//            }
-//        }
-//    } else {
-//        glUniform1f(glGetUniformLocation(m_particle_shader, "isTexture"), -1.0);
-//    }
-
-//    int particle_size=10;
-//    glUniformMatrix4fv(glGetUniformLocation(m_particle_shader, "projectMatrix"), 1, GL_FALSE, &m_proj[0][0]);
-//    glUniformMatrix4fv(glGetUniformLocation(m_particle_shader, "viewMatrix"), 1, GL_FALSE, &m_view[0][0]);
-//    glUniform1f(glGetUniformLocation(m_particle_shader, "pointSize"),particle_size );
-
-
-//    glDrawArrays(GL_POINTS, 0, m_particle_data.size() / 3);
-
-
-//    glBindVertexArray(0);
-//    glBindTexture(GL_TEXTURE_2D, 0);
-//    glUseProgram(0);
-
-//}
-void Realtime::update_particle_vbo(){
-
-    m_particle_data=particles->getPosData();
-    //    m_particle_data = {
-    //        // 第一个顶点坐标
-    //        0.0f, 0.5f, 0.0f,
-    //        // 第二个顶点坐标
-    //        0.5f, -0.5f, 0.0f,
-    //        // 第三个顶点坐标
-    //        -0.5f, -0.5f, 0.0f
-    //    };
-    glBindVertexArray(m_particle_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, m_particle_vbo);
-
-    glBufferData(GL_ARRAY_BUFFER,
-                 m_particle_data.size() * sizeof(float),
-                 m_particle_data.data(), GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-    //    std::vector<float> bufferData(m_particle_data.size());
-    //    glBindBuffer(GL_ARRAY_BUFFER, m_particle_vbo);
-    //    glGetBufferSubData(GL_ARRAY_BUFFER, 0, m_particle_data.size() * sizeof(float), bufferData.data());
-    //    if (bufferData.size() >= 2) {
-    //        std::cout << "First element: " << bufferData[0] << std::endl;
-    //        std::cout << "Second element: " << bufferData[1] << std::endl;
-    //    } else {
-    //        std::cerr << "bufferData does not contain enough elements." << std::endl;
-    //    }
-
-}
-
-void Realtime::setupParticle(){
-    particles=std::make_shared<ParticleSystem>();
-}
-//void Realtime::setupParticleGL(){
-//    setupParticle();
-//    glBindVertexArray(m_particle_vao);
-//    glBindBuffer(GL_ARRAY_BUFFER, m_particle_vbo);
-
-//    glBufferData(GL_ARRAY_BUFFER,
-//                 m_particle_data.size() * sizeof(float),
-//                 m_particle_data.data(), GL_STATIC_DRAW);
-
-//    glEnableVertexAttribArray(0);
-//    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-//    glBindBuffer(GL_ARRAY_BUFFER, 0);
-//    glBindVertexArray(0);
-//}
