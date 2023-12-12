@@ -20,9 +20,9 @@
 
 ### Terrain generation
 
-Terrain Generation allows creating volumetric mountains that can be viewed from various angles and distances.
+Terrain Generator allows creating volumetric mountains that can be viewed from various angles and distances.
 
-- **Generation from height maps**: Terrain Generation forms terrain based on height map images. Users may upload any images to produce landscapes with distinctive looks.
+- **Generation from height maps**: Terrain Generator forms terrain based on height map images. Users may upload any images to produce landscapes with distinctive looks.
   ![Alt text](img/terrain_3.jpg)
 - **Adjust bumpiness**: Users can adjust terrain bumpiness in real-time using a slider, enabling a smoother or more rugged appearance in the generated terrain.
   ![Alt text](img/terrain_4.jpg)
