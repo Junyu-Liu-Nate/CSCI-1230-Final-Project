@@ -377,7 +377,7 @@ void Realtime::paintGeometry() {
 
 
     // Pass shape info and draw shape
-    for (int i = 1; i < shapeStartIndices.size(); i++) {
+
     for (int i = 1; i < shapeStartIndices.size(); i++) {
         // Pass in model matrix for shape i as a uniform into the shader program
         glUniformMatrix4fv(glGetUniformLocation(m_shader, "modelMatrix"), 1, GL_FALSE, &modelMatrixList[i][0][0]);
@@ -427,6 +427,7 @@ void Realtime::paintGeometry() {
     // Deactivate the shader program by passing 0 into glUseProgram
     glUseProgram(0);
 }
+
 
 void Realtime::paintTerrain() {
     // Bind Vertex Data
