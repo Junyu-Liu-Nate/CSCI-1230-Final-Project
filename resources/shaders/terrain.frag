@@ -61,15 +61,6 @@ void main() {
             snowColor = vec4(0.5,0.5,0.5,1);
         }
     }
-//        float easeY = pow(vertexWorldSpacePos.y, 2) - 2 * pow(vertexWorldSpacePos.y, 3) + 0.05;
-//        float heightValue = easeY * 12.0f;
-//        float angle = dot(vertexWorldSpaceNormal, vec3(0,0,1));
-//        float easeNormal = 0.5 * angle * angle - 0.5 * angle;
-//        float normalValue = easeNormal*0.5f;
-//        float colorValue = heightValue + normalValue;
-//        colorValue = colorValue * snowTimer / 200.0; // Use timer
-//        colorValue = clamp(colorValue, 0.0f, 1.0f);
-//        vec4 snowColor = vec4(colorValue, colorValue, colorValue, 1);
 
     // ====== Add ambient component to output color
     fragColor.x += ka * cAmbient.x + clamp(colorValue, 0.0, 0.2);
@@ -131,11 +122,6 @@ void main() {
             }
         }
 
-        // ====== Rain specular
-//        float rainSpecularFactor = rainTimer / 200.0;
-//        float shininessRain = shininess * rainSpecularFactor;
-//        shininessRain = clamp(shininessRain, 1.0, 30.0);
-
         // ====== Specular component
         vec3 reflect = normalize(-surfaceToLight) + 2 * NdotL * normalize(vertexWorldSpaceNormal);
         float specularDot = dot(normalize(reflect), normalize(cameraWorldSpacePos.xyz - vertexWorldSpacePos));
@@ -147,12 +133,6 @@ void main() {
         else{
             specularColor = ks * pow(specularDot, shininess) * vec3(cSpecular);
         }
-//        if (shininessRain == 0.0) {
-//            specularColor = ks * 1 * vec3(cSpecular);
-//        }
-//        else{
-//            specularColor = ks * pow(specularDot, shininessRain) * vec3(cSpecular);
-//        }
 
         fragColor.x += att * lightColors[i].x * (diffuseColor.x + specularColor.x) * (1-falloff);
         fragColor.y += att * lightColors[i].y * (diffuseColor.y + specularColor.y) * (1-falloff);
@@ -163,6 +143,4 @@ void main() {
     fragColor.y = clamp(fragColor.y, 0.0f, 1.0f);
     fragColor.z = clamp(fragColor.z, 0.0f, 1.0f);
     fragColor.w = 1.0;
-
-//    fragColor = vec4(1.0, 1.0, 1.0, 1.0); // For debug
 }

@@ -702,7 +702,7 @@ void Realtime::updateTerrainCollisionMap() {
                         Square squareShape;
                         squareShape.updateParams(true, 1, 1, temp_imagePath);
                         staticShapeDataList.push_back(squareShape.generateShape());
-                        particle.position.y = terrainHeight + 0.01;
+                        particle.position.y = terrainHeight + 0.001;
                         if (settings.increase) {
                             particle.position.y += accumulateHeight;
                         }
@@ -1044,10 +1044,6 @@ void Realtime::setupShapeData() {
 void Realtime::setupTerrainData() {
     int shapeParameter1 = settings.bumpiness;
     int shapeParameter2 = settings.shapeParameter2;
-
-//    // Set the lower bound of shape parameters
-//    shapeParameter1 = int(std::max(1, shapeParameter1));
-//    shapeParameter2 = int(std::max(3, shapeParameter2));
 
     terrainData = terrainGenerator.generateTerrain(QString::fromStdString(settings.heightMapPath), settings.bumpiness);
     terrainModelMatrix = glm::mat4(1);
