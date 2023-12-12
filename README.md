@@ -3,7 +3,9 @@
 ![Alt text](img/top.jpg)
 
 **Brown University CSCI 1230/2230 Computer Graphics Final Project.**
+
 **Group Name: Cyber Mountaineering Expedition**
+
 **Keywords:** realtime, OpenGL, Qt, procedural terrain generation, particle system, physical collision system, solar system
 
 ## Get started
