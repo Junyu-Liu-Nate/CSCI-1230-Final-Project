@@ -6,7 +6,7 @@
 
 **Group Name: Cyber Mountaineering Expedition**
 
-**Keywords:** realtime, OpenGL, Qt, procedural terrain generation, particle system, physical collision system, solar system
+**Keywords:** procedural terrain generation, particle system, physical collision system, solar system
 
 ## Get started
 
