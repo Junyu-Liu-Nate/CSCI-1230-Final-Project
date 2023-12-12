@@ -73,9 +73,8 @@ private:
     void paintGeometry();
 
     int shapeParameter1Saved = settings.bumpiness;
-    int shapeParameter2Saved = settings.shapeParameter2;
-    QString texture_filepath_saved = QString::fromStdString("");
 
+    QString texture_filepath_saved = QString::fromStdString("");
 
     // ====== Particle-related
     void paintParticle();
@@ -95,7 +94,6 @@ private:
     int staticParticleNum = 0;
     std::vector<std::vector<float>> staticShapeDataList;
     std::vector<glm::mat4> staticMatrixList;
-
 
     // ====== Terrain-related
     GLuint m_terrain_shader; // Stores id of terrain shader program - terrain.vert/.frag
@@ -122,6 +120,8 @@ private:
     void paintTerrain();
 
     float accumulateRate = 0.001;
+
+    std::string heightMapPathSaved = "";
 
     // ======= Weather-related
     int timeTracker = 0;

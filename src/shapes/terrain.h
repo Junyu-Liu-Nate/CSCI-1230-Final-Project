@@ -17,6 +17,10 @@ public:
     // Takes a normalized (x, y) position, in range [0,1)
     // Returns a height value, z, by sampling a noise function
     float getHeight(float x, float y, int bump);
+
+    void setLoaded() {
+        isLoaded = true;
+    }
 private:
     bool isLoaded;
 

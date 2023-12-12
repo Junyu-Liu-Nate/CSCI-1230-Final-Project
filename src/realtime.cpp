@@ -21,8 +21,6 @@ struct ShapeAndModel {
     glm::mat4 modelMatrix;
 };
 
-
-
 Realtime::Realtime(QWidget *parent)
     : QOpenGLWidget(parent)
 {
@@ -36,23 +34,44 @@ Realtime::Realtime(QWidget *parent)
     m_keyMap[Qt::Key_D]       = false;
     m_keyMap[Qt::Key_Control] = false;
     m_keyMap[Qt::Key_Space]   = false;
-
-    // If you must use this function, do not edit anything above this
 }
 
 void Realtime::finish() {
     killTimer(m_timer);
     this->makeCurrent();
 
-    // Students: anything requiring OpenGL calls when the program exits should be done here
+    // Delete framebuffers
     glDeleteTextures(1, &m_fbo_texture);
     glDeleteRenderbuffers(1, &m_fbo_renderbuffer);
     glDeleteFramebuffers(1, &m_fbo);
 
+    // Delete terrain-related resources
+    glDeleteTextures(1, &m_terrain_texture);
+    glDeleteBuffers(1, &m_terrain_vbo);
+    glDeleteVertexArrays(1, &m_terrain_vao);
+
+    // Delete particle-related resources
+    glDeleteTextures(1, &m_particle_texture);
+    glDeleteBuffers(1, &m_particle_vbo);
+    glDeleteVertexArrays(1, &m_particle_vao);
+
+    // Delete other textures and buffers if any
+    glDeleteTextures(1, &m_texture);
+    glDeleteBuffers(1, &m_vbo);
+    glDeleteVertexArrays(1, &m_vao);
+
+    // Delete shaders
+    glDeleteProgram(m_shader);
+    glDeleteProgram(m_particle_shader);
+    glDeleteProgram(m_terrain_shader);
+    glDeleteProgram(m_frame_shader);
+
+    // Delete collision texture
     glDeleteTextures(1, &m_collision_texture);
 
     this->doneCurrent();
 }
+
 
 // ********************************* GL *********************************
 void Realtime::initializeGL() {
@@ -231,6 +250,30 @@ void Realtime::paintGL() {
     if (settings.snow) {snowTimer += 1;}
     if (settings.sun) {sunTimer += 1;}
 
+    if (settings.heightMapPath != heightMapPathSaved) {
+        staticParticleNum = 0;
+        staticShapeDataList.clear();
+        staticMatrixList.clear();
+
+        m_view = glm::mat4(1.0f);
+        m_proj = glm::mat4(1.0f);
+
+        if (!settings.sceneFilePath.empty()) {
+            // Create scene
+            renderScene = RenderScene(size().width() * m_devicePixelRatio,
+                                      size().height() * m_devicePixelRatio,
+                                      settings.nearPlane,
+                                      settings.farPlane,
+                                      metaData);
+            setupTerrainGL();
+            // Setup camera data from the scene
+            m_view = renderScene.sceneCamera.getViewMatrix();
+            m_proj = renderScene.sceneCamera.getProjectMatrix();
+        }
+
+        heightMapPathSaved = settings.heightMapPath;
+    }
+
     // Bind FBO
     glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
@@ -252,13 +295,10 @@ void Realtime::paintGL() {
         }
     }
 
-
     // ====== Draw with frame shader
     // Bind the default framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, m_defaultFBO);
     glViewport(0, 0, m_screen_width, m_screen_height);
-    // Clear the color and depth buffers
-    //    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Call paintFrame to draw our FBO color attachment texture
     paintFrame(m_fbo_texture);
 }
@@ -351,9 +391,6 @@ void Realtime::paintGeometry() {
             glUniform3f(loc2, light.color.x, light.color.y, light.color.z);
 
             GLint loc3 = glGetUniformLocation(m_shader, ("lightDirections[" + std::to_string(lightCounter) + "]").c_str());
-//            float angleRadians = glm::radians(static_cast<float>(timeTracker));
-//            glm::vec3 rotatedLightDirection = glm::rotate(angleRadians, glm::vec3(0.0f, 0.0f, 1.0f)) * light.dir;
-//            glUniform3f(loc3, rotatedLightDirection.x, rotatedLightDirection.y, rotatedLightDirection.z); // rotate the sun light
             glUniform3f(loc3, light.dir.x, light.dir.y, light.dir.z);
         }
         if (light.type == LightType::LIGHT_POINT) {
@@ -696,7 +733,6 @@ void Realtime::resizeGL(int w, int h) {
     // Tells OpenGL how big the screen is
     glViewport(0, 0, size().width() * m_devicePixelRatio, size().height() * m_devicePixelRatio);
 
-    // Students: anything requiring OpenGL calls when the program starts should be done here
     glDeleteTextures(1, &m_fbo_texture);
     glDeleteRenderbuffers(1, &m_fbo_renderbuffer);
     glDeleteFramebuffers(1, &m_fbo);
@@ -783,13 +819,7 @@ void Realtime::settingsChanged() {
         }
     }
 
-
     if (settings.bumpiness != shapeParameter1Saved) {
-//        shapeDataList.clear();
-//        vboData.clear();
-//        shapeStartIndices.clear();
-//        shapeSizes.clear();
-
         staticParticleNum = 0;
         staticShapeDataList.clear();
         staticMatrixList.clear();
@@ -804,13 +834,6 @@ void Realtime::settingsChanged() {
                                       settings.nearPlane,
                                       settings.farPlane,
                                       metaData);
-//            particles->updateNum(newNum);
-//                std::make_shared<ParticleSystem>(newNum);
-//            if (flagIntensity) {
-//                particles->updateNum(newNum);
-//                setupShapesGL();
-//            }
-//            setupShapesGL();
             setupTerrainGL();
             // Setup camera data from the scene
             m_view = renderScene.sceneCamera.getViewMatrix();
@@ -818,7 +841,6 @@ void Realtime::settingsChanged() {
         }
 
         shapeParameter1Saved = settings.bumpiness;
-        shapeParameter2Saved = settings.shapeParameter2;
     }
 
     particles->updateSpeed();
@@ -995,6 +1017,7 @@ void Realtime::setupShapeData() {
         shapeDataList.push_back(tempShapeDataList[i]);
         modelMatrixList.push_back(tempModelMatrixList[i]);
     }
+
     if (settings.accumulate) {
         for (int i = 0; i < staticParticleNum; ++i) {
             shapeDataList.push_back(staticShapeDataList[i]);
@@ -1026,8 +1049,7 @@ void Realtime::setupTerrainData() {
 //    shapeParameter1 = int(std::max(1, shapeParameter1));
 //    shapeParameter2 = int(std::max(3, shapeParameter2));
 
-    TerrainGenerator testTerrain;
-    terrainData = testTerrain.generateTerrain(QString::fromStdString(settings.heightMapPath), settings.bumpiness);
+    terrainData = terrainGenerator.generateTerrain(QString::fromStdString(settings.heightMapPath), settings.bumpiness);
     terrainModelMatrix = glm::mat4(1);
 
     terrainVboData = terrainData;
