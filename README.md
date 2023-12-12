@@ -1,8 +1,10 @@
-# CSCI-1230-Final-Project for Group Cyber Mountaineering Expedition
+# Realtime Snowy Mountain System 
 
 ![Alt text](img/top.jpg)
 
-CSCI 1230 Final Project
+**Brown University CSCI 1230/2230 Computer Graphics Final Project.**
+**Group Name: Cyber Mountaineering Expedition**
+**Keywords:** realtime, OpenGL, Qt, procedural terrain generation, particle system, physical collision system, solar system
 
 ## Get started
 
