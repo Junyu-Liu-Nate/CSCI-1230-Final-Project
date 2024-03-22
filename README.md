@@ -1,4 +1,4 @@
-# Realtime Snowy Mountain System 
+# Realtime Snow Particle System and Procedural Terrain Generation - OpenGL 
 
 ![Alt text](img/top.jpg)
 
